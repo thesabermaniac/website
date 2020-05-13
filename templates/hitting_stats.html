@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block title %}Hitting | The Sabermaniac{% endblock %}
+
+{% block content %}
+    <table class="table table-striped table-bordered" style="margin-top: 42px">
+        <thead>
+            <tr>
+                {% for field in field_names %}
+                    <th scope="col">{{ field.name }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for stat in object_list %}
+                <tr>
+                    {% for field in stat.get_field_names %}
+                        {% if field.value != None %}
+                            <td>{{ field.value }}</td>
+                        {% else %}
+                            <td>N/A</td>
+                        {% endif %}
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <style>
+        td{white-space: nowrap}
+        .nav{position: fixed; width: 100%; top: 0; background: white}
+    </style>
+{% endblock %}
+
+{% block extra_js %}
+    <script>
+        $(document).ready(function () {
+            $('.hitting').addClass('active')
+        })
+    </script>
+{% endblock %}
