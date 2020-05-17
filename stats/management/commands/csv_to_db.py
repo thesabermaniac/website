@@ -1,7 +1,7 @@
 import csv
 
 from django.core.management.base import BaseCommand, CommandError
-from fstats.models import Player, Statistics
+from stats.models import Player, HittingStatistics
 
 
 class Command(BaseCommand):
@@ -12,14 +12,14 @@ class Command(BaseCommand):
             csv_reader = csv.DictReader(file)
             csv_reader.fieldnames[0] = 'Name'
             for row in csv_reader:
-                print(row)
+                # print(row)
                 name_list = row.get('Name').split()
                 fName = name_list[0]
                 lName = name_list[1]
                 player, player_created = Player.objects.get_or_create(fName=fName,
                                                                lName=lName)
                 player.save()
-                statistic, stat_created = Statistics.objects.get_or_create(player=player, year=2019)
+                statistic, stat_created = HittingStatistics.objects.get_or_create(player=player, year=2019)
                 for item in row.items():
                     if item[0] in statistic.get_field_names():
                         setattr(statistic, item[0], item[1])

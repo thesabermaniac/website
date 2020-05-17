@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand, CommandError
-from fstats.models import Player
+from stats.models import Player
 
 
 class Command(BaseCommand):

@@ -25,9 +25,9 @@ class Player(models.Model):
         return self.fName + " " + self.lName
 
 
-class Statistics(models.Model):
+class HittingStatistics(models.Model):
     player = models.ForeignKey(Player, on_delete=models.CASCADE)
-    year = models.PositiveSmallIntegerField()
+    year = models.PositiveSmallIntegerField(verbose_name="Year")
     G = models.PositiveSmallIntegerField(verbose_name="Games Played",
                                          blank=True,
                                          null=True)
@@ -82,22 +82,61 @@ class Statistics(models.Model):
     OPS = models.FloatField(verbose_name="On-Base Plus Slugging",
                             blank=True,
                             null=True)
-    fAVG = models.FloatField(verbose_name="Fantasy Batting Average",
-                                            blank=True,
-                                            null=True)
-    fOPS = models.PositiveSmallIntegerField(verbose_name="Fantasy On-Base Plus Slugging",
-                                            blank=True,
-                                            null=True)
-    fHR = models.PositiveSmallIntegerField(verbose_name="Fantasy Home Runs",
+    fG = models.SmallIntegerField(verbose_name="Fantasy Home Runs",
                                            blank=True,
                                            null=True)
-    fRBI = models.PositiveSmallIntegerField(verbose_name="Fantasy Runs Batted In",
-                                            blank=True,
-                                            null=True)
-    fR = models.PositiveSmallIntegerField(verbose_name="Fantasy Runs Scored",
+    fPA = models.SmallIntegerField(verbose_name="Fantasy Home Runs",
+                                           blank=True,
+                                           null=True)
+    fHR = models.SmallIntegerField(verbose_name="Fantasy Home Runs",
+                                           blank=True,
+                                           null=True)
+    fR = models.SmallIntegerField(verbose_name="Fantasy Runs Scored",
                                           blank=True,
                                           null=True)
-    fSB = models.PositiveSmallIntegerField(verbose_name="Fantasy Stolen Bases",
+    fRBI = models.SmallIntegerField(verbose_name="Fantasy Runs Batted In",
+                                            blank=True,
+                                            null=True)
+    fBB = models.SmallIntegerField(verbose_name="Fantasy Home Runs",
+                                           blank=True,
+                                           null=True)
+    fIBB = models.SmallIntegerField(verbose_name="Fantasy Home Runs",
+                                           blank=True,
+                                           null=True)
+    fSO = models.SmallIntegerField(verbose_name="Fantasy Home Runs",
+                                           blank=True,
+                                           null=True)
+    fHBP = models.SmallIntegerField(verbose_name="Fantasy Home Runs",
+                                           blank=True,
+                                           null=True)
+    fSF = models.SmallIntegerField(verbose_name="Fantasy Home Runs",
+                                           blank=True,
+                                           null=True)
+    fSH = models.SmallIntegerField(verbose_name="Fantasy Home Runs",
+                                           blank=True,
+                                           null=True)
+    fGDP = models.SmallIntegerField(verbose_name="Fantasy Home Runs",
+                                           blank=True,
+                                           null=True)
+    fSB = models.SmallIntegerField(verbose_name="Fantasy Stolen Bases",
+                                           blank=True,
+                                           null=True)
+    fCS = models.SmallIntegerField(verbose_name="Fantasy Home Runs",
+                                           blank=True,
+                                           null=True)
+    fAVG = models.SmallIntegerField(verbose_name="Fantasy Batting Average",
+                                            blank=True,
+                                            null=True)
+    fOBP = models.SmallIntegerField(verbose_name="Fantasy Home Runs",
+                                           blank=True,
+                                           null=True)
+    fSLG = models.SmallIntegerField(verbose_name="Fantasy Home Runs",
+                                           blank=True,
+                                           null=True)
+    fOPS = models.SmallIntegerField(verbose_name="Fantasy On-Base Plus Slugging",
+                                            blank=True,
+                                            null=True)
+    fTotal = models.SmallIntegerField(verbose_name="Fantasy Total",
                                            blank=True,
                                            null=True)
 
@@ -105,9 +144,28 @@ class Statistics(models.Model):
         verbose_name_plural = 'Statistics'
         ordering = ('id',)
 
-    def get_field_names(self):
+    def get_field_names_and_values(self):
         name_list = []
         for field in self._meta.fields:
             name_list.append({'name': field.name,
                               'value': getattr(self, field.name)})
         return name_list
+
+    def get_field_names(self):
+        name_list = []
+        for field in self._meta.fields:
+            name_list.append(field.name)
+        return name_list
+
+
+    # def save(self, *args, **kwargs):
+    #     formatted_avg = round(float(str(self.AVG).lstrip('0')), 3)
+    #     self.AVG = float(formatted_avg)
+    #     formatted_slg = round(float(str(self.SLG).lstrip('0')), 3)
+    #     self.SLG = float(formatted_slg)
+    #     formatted_obp = round(float(str(self.OBP).lstrip('0')), 3)
+    #     self.OBP = float(formatted_obp)
+    #     formatted_ops = round(float(str(self.OPS).lstrip('0')), 3)
+    #     self.OPS = float(formatted_ops)
+    #     print("Player: " + str(self.player))
+    #     print("OPS: " + str(self.OPS))

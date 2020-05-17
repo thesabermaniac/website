@@ -7,7 +7,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('fstats', '0001_initial'),
+        ('stats', '0001_initial'),
     ]
 
     operations = [
@@ -40,7 +40,7 @@ class Migration(migrations.Migration):
                 ('fRBI', models.PositiveSmallIntegerField(blank=True, null=True, verbose_name='Fantasy Runs Batted In')),
                 ('fR', models.PositiveSmallIntegerField(blank=True, null=True, verbose_name='Fantasy Runs Scored')),
                 ('fSB', models.PositiveSmallIntegerField(verbose_name='Fantasy Stolen Bases')),
-                ('player', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='fstats.Player')),
+                ('player', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='stats.Player')),
             ],
         ),
     ]
