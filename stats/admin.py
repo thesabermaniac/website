@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Player, HittingStatistics
+from .models import Player, HittingStatistics, PitchingStatistics
 
 
 @admin.register(Player)
@@ -11,3 +11,11 @@ class PlayerAdmin(admin.ModelAdmin):
 @admin.register(HittingStatistics)
 class StatisticsAdmin(admin.ModelAdmin):
     list_display = ('player', 'year')
+    search_fields = ('player__lName', 'player__fName', 'year')
+
+
+@admin.register(PitchingStatistics)
+class PitchingStatisticsAdmin(admin.ModelAdmin):
+    list_display = ('player', 'year')
+    ordering = ('player__lName', 'player__fName')
+    search_fields = ('player__lName', 'player__fName', 'year')

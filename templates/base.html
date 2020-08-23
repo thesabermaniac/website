@@ -11,14 +11,14 @@
     <link rel="stylesheet" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.10.21/css/dataTables.bootstrap4.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/css/bootstrap.css">
-    <link rel="icon" href="{% static 'images/logo-main.png'%}">
+    <link rel="icon" href="{% static 'images/logo2_black.jpg'%}">
     {% block head_extras %}
     {% endblock %}
 </head>
 <body>
-    <ul class="nav nav-tabs">
-      <li class="nav-item">
-        <a class="nav-link home" href="/">Home</a>
+    <ul class="nav nav-tabs" style="padding: 10px 0 0 10px">
+      <li>
+          <a href="/"><img src="{% static 'images/logo_main_cropped.png' %}" width="140" height=""></a>
       </li>
       <li class="nav-item">
         <a class="nav-link blog" href="#">Blog</a>
@@ -30,10 +30,10 @@
         <a class="nav-link hitting" href="/stats/hitting/">Hitting</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link pitching" href="#">Pitching</a>
+        <a class="nav-link pitching" href="/stats/pitching">Pitching</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link pitching" href="#">Defense</a>
+        <a class="nav-link defense" href="#">Defense</a>
       </li>
       <li class="nav-item">
         <a class="nav-link about" href="#">About</a>
@@ -49,8 +49,11 @@
     {% block extra_js %}
     {% endblock %}
     <style>
-        a{color: #00ab66}
-        a:hover{color: #007546}
+        a{color: #3ead64}
+        a:hover{color: #398252}
+        .nav-link{margin-top: 35px}
+        .page-item.active .page-link{background-color: #398252; border-color: #398252}
+        .page-link{color: #398252}
     </style>
 </body>
 </html>
