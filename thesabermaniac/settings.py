@@ -131,3 +131,5 @@ STATICFILES_DIRS =(
     os.path.join(BASE_DIR, 'static'),
     'stats/static/'
 )
+
+DEFAULT_YEAR = 2020

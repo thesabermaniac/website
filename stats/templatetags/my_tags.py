@@ -1,4 +1,6 @@
 from django import template
+from django.conf import settings
+
 register = template.Library()
 
 
@@ -15,3 +17,13 @@ def verbose_name_plural(obj):
 @register.filter
 def fTotal(stat, context):
     return context["fTotal_" + stat.player.get_operable_string() + "_" + str(stat.year)]
+
+
+@register.filter
+def get_class_name(obj):
+    return obj.__class__.__name__
+
+
+@register.simple_tag
+def settings_value(name):
+    return getattr(settings, name, "")

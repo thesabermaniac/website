@@ -7,7 +7,11 @@
     <div class="cover" style="position: fixed; height: 100%; width: 100%; top:0; left: 0; z-index:9999; background: white;"></div>
     </div>
     <div style="padding-top: 50px">
+        {% if object_list.first|get_class_name == "PitchingStatistics"%}
+        <form action="/stats/pitching" method="get" style="margin-top: 100px">
+        {% else %}
         <form action="/stats/hitting" method="get" style="margin-top: 100px">
+        {% endif %}
             <ul style="list-style: none; display: block; text-align: center; margin-bottom: 2.5em; padding: 0 10% 0 10%">
                 <li style="width: fit-content; display: inline-block">
                     <div class="dropdown">
@@ -36,7 +40,11 @@
                     </div>
                 </li>
                 <li style="width: fit-content; display: inline-block; position: absolute; margin-left: 5px">
-                    <input type="text" value="{% if request.GET.min_pa %}{{ request.GET.min_pa }}{% endif %}" class="form-control min_pa" placeholder="Minimum PA" name="min_pa" aria-label="Username" aria-describedby="basic-addon1" style="border-color: #398252; background-color: #c5e8d1">
+                    {% if object_list.first|get_class_name == "PitchingStatistics"%}
+                        <input type="text" value="{% if request.GET.min_ip %}{{ request.GET.min_ip }}{% endif %}" class="form-control min_pa" placeholder="Minimum IP" name="min_ip" aria-label="Username" aria-describedby="basic-addon1" style="border-color: #398252; background-color: #c5e8d1">
+                    {% else %}
+                        <input type="text" value="{% if request.GET.min_pa %}{{ request.GET.min_pa }}{% endif %}" class="form-control min_pa" placeholder="Minimum PA" name="min_pa" aria-label="Username" aria-describedby="basic-addon1" style="border-color: #398252; background-color: #c5e8d1">
+                    {% endif %}
                 </li>
                 <li style="width: fit-content; display: inline-block; margin-left: 215px">
                     <button type="submit" class="btn btn-success btn-sm">Search</button>
@@ -104,7 +112,13 @@
 {% block extra_js %}
     <script>
         $(document).ready(function () {
-            $('.hitting').addClass('active');
+            var ModelName = '{{ object_list.first|get_class_name }}'
+            if(ModelName === 'PitchingStatistics'){
+                $('.pitching').addClass('active');
+            }
+            else {
+                $('.hitting').addClass('active')
+            }
             $('option').mousedown(function(e) {
                 e.preventDefault();
                 $(this).prop('selected', !$(this).prop('selected'));

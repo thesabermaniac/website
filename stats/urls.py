@@ -1,7 +1,9 @@
 from django.urls import path
 
-from stats.views import HittingStatsView, PitchingStatsView
+from stats.views import StatsListView
+from stats.models import HittingStatistics, PitchingStatistics
+
 urlpatterns = [
-    path('hitting/', HittingStatsView.as_view()),
-    path('pitching/', PitchingStatsView.as_view())
+    path('hitting/', StatsListView.as_view(model=HittingStatistics)),
+    path('pitching/', StatsListView.as_view(model=PitchingStatistics))
 ]

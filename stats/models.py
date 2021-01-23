@@ -249,14 +249,5 @@ class PitchingStatistics(models.Model):
         ip_frac = frac((int(ip_parts[0]) * 3) + int(ip_parts[1], 3))
         return ip_frac
 
-    # def save(self, *args, **kwargs):
-    #     formatted_avg = round(float(str(self.AVG).lstrip('0')), 3)
-    #     self.AVG = float(formatted_avg)
-    #     formatted_slg = round(float(str(self.SLG).lstrip('0')), 3)
-    #     self.SLG = float(formatted_slg)
-    #     formatted_obp = round(float(str(self.OBP).lstrip('0')), 3)
-    #     self.OBP = float(formatted_obp)
-    #     formatted_ops = round(float(str(self.OPS).lstrip('0')), 3)
-    #     self.OPS = float(formatted_ops)
-    #     print("Player: " + str(self.player))
-    #     print("OPS: " + str(self.OPS))
+    def __str__(self):
+        return self.player.get_operable_string() + "_" + str(self.year)

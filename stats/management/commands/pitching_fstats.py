@@ -6,6 +6,10 @@ from django.db.models import *
 class Command(BaseCommand):
     help = 'Generate fStats for pitching stats'
 
+    def add_arguments(self, parser):
+        parser.add_argument('year', type=int)
+        parser.add_argument('--is_proj', action='store_true')
+
     def handle(self, *args, **options):
         stat_list = ['W', 'L', 'ERA', 'WHIP', 'G', 'GS', 'CG', 'ShO', 'SV', 'HLD', 'BS',
                      'IP', 'TBF', 'H', 'R', 'ER', 'HR', 'BB', 'IBB', 'HBP', 'WP', 'SO']
@@ -13,12 +17,12 @@ class Command(BaseCommand):
         rate_stats = ['ERA', 'WHIP']
         for stat in stat_list:
             fStat = "f" + stat
-            max = PitchingStatistics.objects.filter(year=2020).aggregate(Max(stat))[stat + "__max"] or 0
-            min_stat = PitchingStatistics.objects.filter(year=2020).aggregate(Min(stat))[stat + "__min"] or 0
+            max = PitchingStatistics.objects.filter(year=options['year'], is_projection=options['is_proj']).aggregate(Max(stat))[stat + "__max"] or 0
+            min_stat = PitchingStatistics.objects.filter(year=options['year'], is_projection=options['is_proj']).aggregate(Min(stat))[stat + "__min"] or 0
             control = 100/max if max != 0 else 0
             if stat in reverse_list:
                 control = 100/(min_stat - max) if max != 0 and min_stat != 0 else 0
-            for row in PitchingStatistics.objects.filter(year=2020):
+            for row in PitchingStatistics.objects.filter(year=options['year'], is_projection=options['is_proj']):
                 if getattr(row, stat):
                     result = (getattr(row, stat) * control) + 100 if stat in reverse_list else getattr(row, stat) * control
                 else:
@@ -35,10 +39,9 @@ class Command(BaseCommand):
                         row.fTotal = int(fTotal)/len(stat_list)
                         row.save()
         for statistic in rate_stats:
-            max = PitchingStatistics.objects.filter(year=2020).aggregate(Max("f" + statistic))['f' + statistic + '__max'] or 0
-            # max_fera = PitchingStatistics.objects.all().aggregate(Max("fERA"))['fERA__max']
+            max = PitchingStatistics.objects.filter(year=options['year'], is_projection=options['is_proj']).aggregate(Max("f" + statistic))['f' + statistic + '__max'] or 0
             control = 100/max if max !=0 else 0
-            for row in PitchingStatistics.objects.filter(year=2020):
+            for row in PitchingStatistics.objects.filter(year=options['year'], is_projection=options['is_proj']):
                 result = getattr(row, 'f' + statistic) * control
                 setattr(row, 'f' + statistic, int(result))
                 row.save()
