@@ -10,3 +10,8 @@ def verbose_name(obj, field_name):
 @register.filter
 def verbose_name_plural(obj):
     return obj.verbose_name_plural
+
+
+@register.filter
+def fTotal(stat, context):
+    return context["fTotal_" + stat.player.get_operable_string() + "_" + str(stat.year)]

@@ -10,7 +10,7 @@ class PlayerAdmin(admin.ModelAdmin):
 
 @admin.register(HittingStatistics)
 class StatisticsAdmin(admin.ModelAdmin):
-    list_display = ('player', 'year')
+    list_display = ('player', 'year', 'is_projection')
     search_fields = ('player__lName', 'player__fName', 'year')
 
 

@@ -61,10 +61,10 @@ class fStatsHome(TemplateView):
 class HittingStatsView(TemplateView):
     model = HittingStatistics
     template_name = 'hitting_stats.html'
+    object_list = HittingStatistics.objects.all().order_by('year', 'fTotal')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        object_list = HittingStatistics.objects.filter(PA__gte=186).order_by('year', 'fTotal')
 
         stat_list = ['player', 'year']
         stat_list.extend(self.request.GET.getlist('include'))
@@ -72,29 +72,28 @@ class HittingStatsView(TemplateView):
             stat_list.append("f" + stat)
         stat_list.append("fTotal")
 
+        if self.request.GET.get('proj'):
+            self.object_list = self.object_list.filter(is_projection=self.request.GET.getlist('proj'))
+
         if self.request.GET.get('year'):
-            object_list = object_list.filter(year=self.request.GET.get('year'))
+            self.object_list = self.object_list.filter(year__in=self.request.GET.getlist('year'))
 
         if self.request.GET.get('min_pa'):
-            object_list = object_list.filter(PA__gte=self.request.GET.get('min_pa'))
+            self.object_list = self.object_list.filter(PA__gte=self.request.GET.get('min_pa'))
+        print(self.object_list)
 
         context['field_names'] = HittingStatistics.objects.first().get_field_names()
         context['included_field_names'] = stat_list if self.request.GET.get('include') else HittingStatistics.objects.first().get_field_names()
-        context['object_list'] = object_list.order_by('fTotal')
+        context['object_list'] = self.object_list.order_by('fTotal')
         context['year_list'] = HittingStatistics.objects.order_by().values_list('year', flat=True).distinct()
+        for row in self.object_list:
+            total = 0
+            for stat in self.request.GET.getlist('include'):
+                total += getattr(row, "f" + stat)
+            average = total/len(self.request.GET.getlist('include'))
+            context['fTotal_' + str(row)] = int(average)
+        context['context'] = context
         return context
-
-    def get(self, request, *args, **kwargs):
-        if request.GET.get('include'):
-            stats_list = request.GET.getlist('include')
-            for row in HittingStatistics.objects.all():
-                total = 0
-                for stat in stats_list:
-                    total += getattr(row, "f" + stat)
-                average = total/len(stats_list)
-                row.fTotal = average
-                row.save()
-        return render(request, 'hitting_stats.html', context=self.get_context_data())
 
 
 class PitchingStatsView(TemplateView):

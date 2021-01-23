@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load my_tags %}
 
 {% block title %}Hitting | The Sabermaniac{% endblock %}
 
@@ -16,7 +17,7 @@
                         <select name="include" class="multiselect dropdown-menu" multiple="multiple" aria-labelledby="dropdownMenuButton" style="width: 100px; white-space: normal; height: 240px; overflow: hidden">
                             {% for field in field_names %}
                                 {% if field|slice:'1' != 'f' and field != 'id' and field != 'player' and field != 'year' and field != 'is_projection'%}
-                                    <option value="{{ field }}">{{ field|capfirst }}</option>
+                                    <option value="{{ field }}" {% if field in included_field_names %}selected{% endif %}>{{ field|capfirst }}</option>
                                 {% endif %}
                             {% endfor %}
                         </select>
@@ -29,13 +30,13 @@
                         </button>
                         <select name="year" class="multiselect dropdown-menu" multiple="multiple" aria-labelledby="dropdownMenuButton" style="white-space: normal; overflow: hidden">
                             {% for year in year_list %}
-                                <option value="{{ year }}">{{ year }}</option>
+                                <option value="{{ year }}" {% if year|slugify in request.GET.year %}selected{% endif %}>{{ year }}</option>
                             {% endfor %}
                         </select>
                     </div>
                 </li>
                 <li style="width: fit-content; display: inline-block; position: absolute; margin-left: 5px">
-                      <input type="text" class="form-control" placeholder="Minimum PA" name="min_pa" aria-label="Username" aria-describedby="basic-addon1" style="border-color: #398252; background-color: #c5e8d1">
+                    <input type="text" value="{% if request.GET.min_pa %}{{ request.GET.min_pa }}{% endif %}" class="form-control min_pa" placeholder="Minimum PA" name="min_pa" aria-label="Username" aria-describedby="basic-addon1" style="border-color: #398252; background-color: #c5e8d1">
                 </li>
                 <li style="width: fit-content; display: inline-block; margin-left: 215px">
                     <button type="submit" class="btn btn-success btn-sm">Search</button>
@@ -61,11 +62,12 @@
                             {% if field.name in included_field_names%}
                                 {% if field.name == 'AVG' or field.name == 'OBP' or field.name == 'OPS' %}
                                     <td>{{ field.value|floatformat:3 }}</td>
-                                {% elif field.value != None and field.name != 'id'%}
+                                {% elif field.value != None and field.name != 'id' and field.name != 'is_projection' and field.name != 'fTotal'%}
                                     <td>{{ field.value }}</td>
                                 {% endif %}
                             {% endif %}
                         {% endfor %}
+                        <td>{{ stat|fTotal:context }}</td>
                     </tr>
                 {% endfor %}
             </tbody>
@@ -95,6 +97,7 @@
         .btn-success{background-color: #398252; border-color: #398252}
         .form-control::placeholder{color: #398252}
         .form-control{color: #398252}
+        .min_pa::before{content: 'Minimum PA'}
     </style>
 {% endblock %}
 
