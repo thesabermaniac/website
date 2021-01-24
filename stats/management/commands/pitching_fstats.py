@@ -12,9 +12,9 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         stat_list = ['W', 'L', 'ERA', 'WHIP', 'G', 'GS', 'CG', 'ShO', 'SV', 'HLD', 'BS',
-                     'IP', 'TBF', 'H', 'R', 'ER', 'HR', 'BB', 'IBB', 'HBP', 'WP', 'SO']
+                     'IP', 'TBF', 'H', 'R', 'ER', 'HR', 'BB', 'IBB', 'HBP', 'WP', 'SO', 'SVH', 'K_BB']
         reverse_list = ['L', 'ERA', 'WHIP', 'BS', 'H', 'R', 'ER', 'HR', 'BB', 'IBB', 'HBP', 'WP']
-        rate_stats = ['ERA', 'WHIP']
+        rate_stats = ['ERA', 'WHIP', 'K_BB']
         for stat in stat_list:
             fStat = "f" + stat
             max = PitchingStatistics.objects.filter(year=options['year'], is_projection=options['is_proj']).aggregate(Max(stat))[stat + "__max"] or 0

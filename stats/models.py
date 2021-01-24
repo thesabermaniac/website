@@ -179,7 +179,10 @@ class PitchingStatistics(models.Model):
                                   default=0)
     SO = models.SmallIntegerField(verbose_name="Strikeouts",
                                   default=0)
-
+    SVH = models.SmallIntegerField(verbose_name="Saves + Holds",
+                                   default=0)
+    K_BB = models.FloatField(verbose_name="Strikeouts per Walk",
+                             default=0)
     fW = models.SmallIntegerField(verbose_name="Fantasy Wins",
                                   default=0)
     fL = models.SmallIntegerField(verbose_name="Fantasy Losses",
@@ -224,6 +227,10 @@ class PitchingStatistics(models.Model):
                                    default=0)
     fSO = models.SmallIntegerField(verbose_name="Fantasy Strikeouts",
                                    default=0)
+    fSVH = models.SmallIntegerField(verbose_name="Fantasy Saves + Holds",
+                                    default=0)
+    fK_BB = models.SmallIntegerField(verbose_name="Fantasy K/BB",
+                                     default=0)
     fTotal = models.SmallIntegerField(verbose_name="Fantasy Total",
                                       default=0)
 
@@ -251,3 +258,8 @@ class PitchingStatistics(models.Model):
 
     def __str__(self):
         return self.player.get_operable_string() + "_" + str(self.year)
+
+    def save(self, *args, **kwargs):
+        self.SVH = self.SV + self.HLD
+        self.K_BB = self.SO/self.BB if self.BB > 0 else self.SO
+        super(PitchingStatistics, self).save(*args, **kwargs)

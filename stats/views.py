@@ -85,11 +85,10 @@ class StatsListView(ListView):
         if self.request.GET.get('min_ip'):
             self.model = self.model.filter(IP__gte=self.request.GET.get('min_ip'))
 
-        context['field_names'] = self.model.first().get_field_names()
+        context['field_names'] = self.model.first().get_field_names() if self.model else ''
         context['included_field_names'] = stat_list if self.request.GET.get('include') else self.model.first().get_field_names()
         context['object_list'] = self.model.order_by('fTotal')
         context['default_year'] = settings.DEFAULT_YEAR
-        print(settings.DEFAULT_YEAR)
         for row in self.model:
             total = 0
             for stat in self.request.GET.getlist('include'):
