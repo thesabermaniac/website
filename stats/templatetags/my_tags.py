@@ -27,3 +27,13 @@ def get_class_name(obj):
 @register.simple_tag
 def settings_value(name):
     return getattr(settings, name, "")
+
+
+@register.filter
+def multiply(a, b):
+    return a * b
+
+
+@register.filter
+def divide(a, b):
+    return a/b
