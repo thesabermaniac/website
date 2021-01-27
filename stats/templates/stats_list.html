@@ -55,17 +55,25 @@
                                 Year
                             </button>
                             <select name="year" class="multiselect dropdown-menu" multiple="multiple" aria-labelledby="dropdownMenuButton" style="white-space: normal; overflow: hidden">
-                                {% for year in year_list %}
-                                    <option value="{{ year }}" {% if year|slugify in request.GET.year %}selected{% endif %}>{{ year }}</option>
-                                {% endfor %}
+                                {% if request.GET.proj == 'True' %}
+                                    {% for year in bigboard_years_proj %}
+                                        <option value="{{ year }}" {% if year|slugify in request.GET.year %}selected{% endif %}>{{ year }}</option>
+                                    {% endfor %}
+                                {% else %}
+                                    {% for year in bigboard_years %}
+                                        <option value="{{ year }}" {% if year|slugify in request.GET.year %}selected{% endif %}>{{ year }}</option>
+                                    {% endfor %}
+                                {% endif %}
                             </select>
                         </div>
                     </li>
-                    <li style="width: fit-content; display: inline-block">
-                        <input type="text" value="{% if request.GET.min_pa %}{{ request.GET.min_pa }}{% endif %}" class="form-control min_pa" placeholder="Minimum PA" name="min_pa" aria-label="Username" aria-describedby="basic-addon1" style="border-color: #398252; background-color: #c5e8d1">
+                    <li class="text-input" style="width: fit-content; display: inline-block; position: relative">
+                        <input required type="text" value="{% if request.GET.min_pa %}{{ request.GET.min_pa }}{% endif %}" class="form-control min_pa" name="min_pa" id="min_pa" style="border-color: #398252; background-color: #c5e8d1">
+                        <label for="min_pa">Minimum PA</label>
                     </li>
-                    <li style="width: fit-content; display: inline-block">
-                        <input type="text" value="{% if request.GET.min_ip %}{{ request.GET.min_ip }}{% endif %}" class="form-control min_pa" placeholder="Minimum IP" name="min_ip" aria-label="Username" aria-describedby="basic-addon1" style="border-color: #398252; background-color: #c5e8d1">
+                    <li class="text-input" style="width: fit-content; display: inline-block; position: relative">
+                        <input required type="text" value="{% if request.GET.min_ip %}{{ request.GET.min_ip }}{% endif %}" class="form-control min_pa" name="min_ip" id="min_ip" style="border-color: #398252; background-color: #c5e8d1">
+                        <label for="min_ip">Minimum IP</label>
                     </li>
                     <li style="width: fit-content; display: inline-block;">
                         <button type="submit" class="btn btn-success btn-sm" style="line-height: 2">Search</button>
@@ -105,17 +113,25 @@
                                 Year
                             </button>
                             <select name="year" class="multiselect dropdown-menu" multiple="multiple" aria-labelledby="dropdownMenuButton" style="white-space: normal; overflow: hidden">
-                                {% for year in year_list %}
-                                    <option value="{{ year }}" {% if year|slugify in request.GET.year %}selected{% endif %}>{{ year }}</option>
-                                {% endfor %}
+                                {% if request.GET.proj == 'True' %}
+                                    {% for year in bigboard_years_proj %}
+                                        <option value="{{ year }}" {% if year|slugify in request.GET.year %}selected{% endif %}>{{ year }}</option>
+                                    {% endfor %}
+                                {% else %}
+                                    {% for year in bigboard_years %}
+                                        <option value="{{ year }}" {% if year|slugify in request.GET.year %}selected{% endif %}>{{ year }}</option>
+                                    {% endfor %}
+                                {% endif %}
                             </select>
                         </div>
                     </li>
-                    <li style="width: fit-content; display: inline-block;">
+                    <li class="text-input" style="width: fit-content; display: inline-block; position: relative">
                         {% if object_list.first|get_class_name == "PitchingStatistics"%}
-                            <input type="text" value="{% if request.GET.min_ip %}{{ request.GET.min_ip }}{% endif %}" class="form-control min_pa" placeholder="Minimum IP" name="min_ip" aria-label="Username" aria-describedby="basic-addon1" style="border-color: #398252; background-color: #c5e8d1">
+                            <input required type="text" value="{% if request.GET.min_ip %}{{ request.GET.min_ip }}{% endif %}" class="form-control min_pa" name="min_ip" id="min_ip" aria-describedby="basic-addon1" style="border-color: #398252; background-color: #c5e8d1">
+                            <label for="min_ip">Minimum IP</label>
                         {% else %}
-                            <input type="text" value="{% if request.GET.min_pa %}{{ request.GET.min_pa }}{% endif %}" class="form-control min_pa" placeholder="Minimum PA" name="min_pa" aria-label="Username" aria-describedby="basic-addon1" style="border-color: #398252; background-color: #c5e8d1">
+                            <input required type="text" value="{% if request.GET.min_pa %}{{ request.GET.min_pa }}{% endif %}" class="form-control min_pa" name="min_pa" id="min_pa" aria-describedby="basic-addon1" style="border-color: #398252; background-color: #c5e8d1">
+                            <label for="min_pa">Minimum PA</label>
                         {% endif %}
                     </li>
                     <li style="width: fit-content; display: inline-block;">
@@ -196,14 +212,21 @@
         .form-control::placeholder{color: #398252}
         .form-control{color: #398252}
         .min_pa::before{content: 'Minimum PA'}
+        input[type=text]:valid + label, input[type=text]:focus + label{top: -22px; opacity: 1}
+        .text-input label{position:absolute; top: 5px; left: 5px; opacity: .5}
+        input[type=text] ~ label{transition: top 1s, opacity 1s}
     </style>
 {% endblock %}
 
 {% block extra_js %}
     <script>
         $(document).ready(function () {
-            var ModelName = '{{ object_list.first|get_class_name }}'
-            if({{ bigboard|yesno:"true,false" }}){
+            var ModelName = '{{ object_list.first|get_class_name }}';
+            var proj = '{{ request.GET.proj }}';
+            if(proj === "True"){
+                $('.projections').addClass('active')
+            }
+            else if({{ bigboard|yesno:"true,false" }}){
                 $('.bigboard').addClass('active');
             }
             else if(ModelName === 'PitchingStatistics'){
