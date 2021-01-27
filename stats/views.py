@@ -55,8 +55,8 @@ class BigBoardView(ListView):
                 total += getattr(row, stat)
             average = total/len(pitching_stats) if len(pitching_stats) > 0 else 1
             context['fTotal_' + str(row)] = int(average)
-        context['hitting_fields'] = self.hitting_qs.first().get_field_names()
-        context['pitching_fields'] = self.pitching_qs.first().get_field_names()
+        context['hitting_fields'] = self.hitting_qs.first().get_field_names() if self.hitting_qs else ''
+        context['pitching_fields'] = self.pitching_qs.first().get_field_names() if self.pitching_qs else ''
         context['year_list'] = list(set(HittingStatistics.objects.order_by().values_list('year', flat=True).distinct()) & set(PitchingStatistics.objects.order_by().values_list('year', flat=True).distinct()))
         context['included_field_names'] = stat_list
         context['hitting_stats'] = hitting_stats

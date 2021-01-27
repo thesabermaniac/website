@@ -66,6 +66,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'stats.context_processors.years_processor_proj',
+                'stats.context_processors.years_processor',
             ],
         },
     },
@@ -133,3 +135,4 @@ STATICFILES_DIRS =(
 )
 
 DEFAULT_YEAR = 2020
+DEFAULT_YEAR_PROJ = 2021
