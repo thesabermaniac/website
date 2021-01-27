@@ -4,58 +4,65 @@ from stats.models import HittingStatistics, Player, PitchingStatistics
 from django.db.models import *
 from django.conf import settings
 
+from itertools import chain
+
 
 class Home(TemplateView):
     template_name = 'home.html'
 
 
-class fStatsHome(TemplateView):
+class BigBoardView(ListView):
     model = HittingStatistics
-    template_name = 'fstats_home.html'
+    template_name = 'stats_list.html'
+    hitting_qs = HittingStatistics.objects.all()
+    pitching_qs = PitchingStatistics.objects.all()
+
+    def get_queryset(self):
+        if self.request.GET.get('year'):
+            self.hitting_qs = self.hitting_qs.filter(year=self.request.GET.get('year'))
+            self.pitching_qs = self.pitching_qs.filter(year=self.request.GET.get('year'))
+        if self.request.GET.get('proj'):
+            self.hitting_qs = self.hitting_qs.filter(is_projection=self.request.GET.get('proj'), projection_system=self.request.GET.get('proj_sys'))
+            self.pitching_qs = self.pitching_qs.filter(is_projection=self.request.GET.get('proj'), projection_system=self.request.GET.get('proj_sys'))
+        if self.request.GET.get('min_pa'):
+            self.hitting_qs = self.hitting_qs.filter(PA__gte=self.request.GET.get('min_pa'))
+        if self.request.GET.get('min_ip'):
+            self.pitching_qs = self.pitching_qs.filter(IP__gte=self.request.GET.get('min_ip'))
+        return list(chain(self.hitting_qs, self.pitching_qs))
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        object_list = HittingStatistics.objects.all().order_by('fTotal')
-
+        context['context'] = context
+        hitting_stats = []
+        pitching_stats = []
         stat_list = ['player', 'year']
-        stat_list.extend(self.request.GET.getlist('include'))
-        for stat in self.request.GET.getlist('include'):
-            stat_list.append("f" + stat)
-        stat_list.append("fTotal")
-
-        if self.request.GET.get('year'):
-            object_list = object_list.filter(year=self.request.GET.get('year'))
-
-        if self.request.GET.get('min_pa'):
-            object_list = object_list.filter(PA__gte=self.request.GET.get('min_pa'))
-
-        context['field_names'] = HittingStatistics.objects.first().get_field_names()
-        context['included_field_names'] = stat_list if self.request.GET.get('include') else HittingStatistics.objects.first().get_field_names()
-        context['object_list'] = object_list.order_by('fTotal')
-        context['year_list'] = HittingStatistics.objects.order_by().values_list('year', flat=True).distinct()
+        for stat in self.request.GET.getlist('hitting'):
+            hitting_stats.append("f" + stat)
+        for stat in self.request.GET.getlist('pitching'):
+            pitching_stats.append("f" + stat)
+        stat_list.extend(hitting_stats)
+        stat_list.extend(pitching_stats)
+        stat_list.append('fTotal')
+        for row in self.hitting_qs:
+            total = 0
+            for stat in hitting_stats:
+                total += getattr(row, stat)
+            average = total/len(hitting_stats) if len(hitting_stats) > 0 else 1
+            context['fTotal_' + str(row)] = int(average)
+        for row in self.pitching_qs:
+            total = 0
+            for stat in pitching_stats:
+                total += getattr(row, stat)
+            average = total/len(pitching_stats) if len(pitching_stats) > 0 else 1
+            context['fTotal_' + str(row)] = int(average)
+        context['hitting_fields'] = self.hitting_qs.first().get_field_names()
+        context['pitching_fields'] = self.pitching_qs.first().get_field_names()
+        context['year_list'] = list(set(HittingStatistics.objects.order_by().values_list('year', flat=True).distinct()) & set(PitchingStatistics.objects.order_by().values_list('year', flat=True).distinct()))
+        context['included_field_names'] = stat_list
+        context['hitting_stats'] = hitting_stats
+        context['pitching_stats'] = pitching_stats
+        context['bigboard'] = True
         return context
-
-    def get(self, request, *args, **kwargs):
-        if request.GET.get('include'):
-            stats_list = request.GET.getlist('include')
-            for stat in stats_list:
-                fStat = "f" + stat
-                average = HittingStatistics.objects.all().aggregate(Avg(stat))[stat + "__avg"]
-                max = HittingStatistics.objects.all().aggregate(Max(stat))[stat + "__max"]
-                control = 100/((max - average)/average * 100)
-                for row in HittingStatistics.objects.all():
-                    if getattr(row, fStat) is None:
-                        increase = getattr(row, stat) - average
-                        percent_increase = increase/average * 100
-                        setattr(row, fStat, int(100 + (percent_increase * control)))
-                        row.save()
-                        if stat == stats_list[-1]:
-                            fTotal = 0
-                            for score in stats_list:
-                                fTotal += getattr(row, "f" + score)
-                            row.fTotal = int(fTotal)/len(stats_list)
-                            row.save()
-        return render(request, 'fstats_home.html', context=self.get_context_data())
 
 
 class StatsListView(ListView):
@@ -74,7 +81,7 @@ class StatsListView(ListView):
         stat_list.append("fTotal")
 
         if self.request.GET.get('proj'):
-            self.model = self.model.filter(is_projection=self.request.GET.get('proj'))
+            self.model = self.model.filter(is_projection=self.request.GET.get('proj'), projection_system=self.request.GET.get('proj_sys'))
 
         if self.request.GET.get('year'):
             self.model = self.model.filter(year__in=self.request.GET.getlist('year'))
@@ -87,7 +94,7 @@ class StatsListView(ListView):
 
         context['field_names'] = self.model.first().get_field_names() if self.model else ''
         context['included_field_names'] = stat_list if self.request.GET.get('include') else self.model.first().get_field_names()
-        context['object_list'] = self.model.order_by('fTotal')
+        context['object_list'] = self.model
         context['default_year'] = settings.DEFAULT_YEAR
         for row in self.model:
             total = 0

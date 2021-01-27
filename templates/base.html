@@ -22,10 +22,7 @@
           <a href="/"><img src="{% static 'images/logo_main_cropped.png' %}" width="140" height=""></a>
       </li>
       <li class="nav-item">
-        <a class="nav-link blog" href="#">Blog</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link fstats" href="/fstats/">fSTATS</a>
+        <a class="nav-link bigboard" href="/bigboard?hitting=HR&hitting=R&hitting=RBI&hitting=SB&hitting=AVG&hitting=OPS&pitching=W&pitching=ERA&pitching=WHIP&pitching=SO&pitching=SVH&pitching=K_BB&year=2021&min_ip=10&min_pa=186&proj=True&proj_sys=steamer">Bigboard</a>
       </li>
       <li class="nav-item">
         <a class="nav-link hitting" href="/stats/hitting?include=HR&include=R&include=RBI&include=SB&include=AVG&include=OPS&year={% settings_value "DEFAULT_YEAR" %}&min_pa=186&proj=False">Hitting</a>
@@ -34,7 +31,7 @@
         <a class="nav-link pitching" href="/stats/pitching?include=W&include=ERA&include=WHIP&include=SO&include=SVH&include=K_BB&year={% settings_value "DEFAULT_YEAR" %}&min_ip=10&proj=False">Pitching</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link defense" href="#">Defense</a>
+        <a class="nav-link blog" href="#">Blog</a>
       </li>
       <li class="nav-item">
         <a class="nav-link about" href="#">About</a>

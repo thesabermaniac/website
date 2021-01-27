@@ -37,3 +37,13 @@ def multiply(a, b):
 @register.filter
 def divide(a, b):
     return a/b
+
+
+@register.filter
+def get_stat(obj, value):
+    return getattr(obj, value)
+
+
+@register.filter
+def get_fstat(obj, value):
+    return getattr(obj, "f" + value)
