@@ -1,63 +1,138 @@
 {% extends 'base.html' %}
 {% load my_tags %}
+{% load static %}
 
-{% block title %}{% if object_list.first|get_class_name == "PitchingStatistics"%}Pitching{% else %}Hitting{% endif %} | The Sabermaniac{% endblock %}
+{% block title %}{% if bigboard %}Bigboard{% elif object_list.first|get_class_name == "PitchingStatistics"%}Pitching{% else %}Hitting{% endif %} | The Sabermaniac{% endblock %}
 
 {% block content %}
-    <div class="cover" style="position: fixed; height: 100%; width: 100%; top:0; left: 0; z-index:9999; background: white;"></div>
+    <div class="cover" style="background: white;"></div>
+        <div class="cover" style=" background-image: url('{% static 'images/loading.gif' %}'); background-position: center; background-repeat: no-repeat;"></div>
     </div>
+    <style>
+        .cover{position: fixed; height: 100%; width: 100%; top:0; left: 0; z-index:9999; }
+    </style>
     <div style="padding-top: 50px">
-        {% if object_list.first|get_class_name == "PitchingStatistics"%}
-        <form action="/stats/pitching" method="get" style="margin-top: 100px">
-        {% else %}
-        <form action="/stats/hitting" method="get" style="margin-top: 100px">
-        {% endif %}
-            <ul style="list-style: none; display: block; text-align: center; margin-bottom: 2.5em; padding: 0 10% 0 10%">
-                <li style="width: fit-content; display: inline-block">
-                    <div class="dropdown">
-                        <button class="btn btn-success dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            Included Stats
-                        </button>
-                        <select name="include" class="multiselect dropdown-menu" multiple="multiple" aria-labelledby="dropdownMenuButton" style="width: 100px; white-space: normal; height: {{ field_names|length|divide:2|multiply:12 }}px; overflow: hidden">
-                            {% for field in field_names %}
-                                {% if field|slice:'1' != 'f' and field != 'id' and field != 'player' and field != 'year' and field != 'is_projection'%}
-                                    <option value="{{ field }}" {% if field in included_field_names %}selected{% endif %}>{{ field|capfirst }}</option>
-                                {% endif %}
-                            {% endfor %}
-                        </select>
-                    </div>
-                </li>
-                <li style="width: fit-content; display: inline-block">
-                    <div class="dropdown">
-                        <button class="btn btn-success dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            Year
-                        </button>
-                        <select name="year" class="multiselect dropdown-menu" multiple="multiple" aria-labelledby="dropdownMenuButton" style="white-space: normal; overflow: hidden">
-                            {% for year in year_list %}
-                                <option value="{{ year }}" {% if year|slugify in request.GET.year %}selected{% endif %}>{{ year }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </li>
-                <li style="width: fit-content; display: inline-block; position: absolute; margin-left: 5px">
-                    {% if object_list.first|get_class_name == "PitchingStatistics"%}
-                        <input type="text" value="{% if request.GET.min_ip %}{{ request.GET.min_ip }}{% endif %}" class="form-control min_pa" placeholder="Minimum IP" name="min_ip" aria-label="Username" aria-describedby="basic-addon1" style="border-color: #398252; background-color: #c5e8d1">
-                    {% else %}
+        {% if bigboard %}
+            <form action="/bigboard" method="get" style="margin-top: 100px">
+                {% if request.GET.proj %}
+                    <input type="hidden" value="{{ request.GET.proj }}" name="proj">
+                {% endif %}
+                {% if request.GET.proj_sys %}
+                    <input type="hidden" value="{{ request.GET.proj_sys }}" name="proj_sys">
+                {% endif %}
+                <ul class="form-list">
+                    <li style="width: fit-content; display: inline-block">
+                        <div class="dropdown">
+                            <button class="btn btn-success dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Hitting Stats
+                            </button>
+                            <select name="hitting" class="multiselect dropdown-menu" multiple="multiple" aria-labelledby="dropdownMenuButton" style="width: 100px; white-space: normal; height: {{ hitting_fields|length|divide:2|multiply:12 }}px; overflow: hidden">
+                                {% for field in hitting_fields %}
+                                    {% if field|slice:'1' != 'f' and field != 'id' and field != 'player' and field != 'year' and field != 'is_projection' and field != 'projection_system'%}
+                                        <option value="{{ field }}" {% if "f"|add:field in hitting_stats %}selected{% endif %}>{{ field|capfirst }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </li>
+                    <li style="width: fit-content; display: inline-block">
+                        <div class="dropdown">
+                            <button class="btn btn-success dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Pitching Stats
+                            </button>
+                            <select name="pitching" class="multiselect dropdown-menu" multiple="multiple" aria-labelledby="dropdownMenuButton" style="width: 100px; white-space: normal; height: {{ pitching_fields|length|divide:2|multiply:12 }}px; overflow: hidden">
+                                {% for field in pitching_fields %}
+                                    {% if field|slice:'1' != 'f' and field != 'id' and field != 'player' and field != 'year' and field != 'is_projection' and field != 'projection_system'%}
+                                        <option value="{{ field }}" {% if "f"|add:field in pitching_stats %}selected{% endif %}>{{ field|capfirst }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </li>
+                    <li style="width: fit-content; display: inline-block">
+                        <div class="dropdown">
+                            <button class="btn btn-success dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Year
+                            </button>
+                            <select name="year" class="multiselect dropdown-menu" multiple="multiple" aria-labelledby="dropdownMenuButton" style="white-space: normal; overflow: hidden">
+                                {% for year in year_list %}
+                                    <option value="{{ year }}" {% if year|slugify in request.GET.year %}selected{% endif %}>{{ year }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </li>
+                    <li style="width: fit-content; display: inline-block">
                         <input type="text" value="{% if request.GET.min_pa %}{{ request.GET.min_pa }}{% endif %}" class="form-control min_pa" placeholder="Minimum PA" name="min_pa" aria-label="Username" aria-describedby="basic-addon1" style="border-color: #398252; background-color: #c5e8d1">
-                    {% endif %}
-                </li>
-                <li style="width: fit-content; display: inline-block; margin-left: 215px">
-                    <button type="submit" class="btn btn-success btn-sm">Search</button>
-                </li>
-            </ul>
-        </form>
+                    </li>
+                    <li style="width: fit-content; display: inline-block">
+                        <input type="text" value="{% if request.GET.min_ip %}{{ request.GET.min_ip }}{% endif %}" class="form-control min_pa" placeholder="Minimum IP" name="min_ip" aria-label="Username" aria-describedby="basic-addon1" style="border-color: #398252; background-color: #c5e8d1">
+                    </li>
+                    <li style="width: fit-content; display: inline-block;">
+                        <button type="submit" class="btn btn-success btn-sm" style="line-height: 2">Search</button>
+                    </li>
+                </ul>
+            </form>
+        {% else %}
+            {% if object_list.first|get_class_name == "PitchingStatistics"%}
+            <form action="/stats/pitching" method="get" style="margin-top: 100px">
+            {% else %}
+            <form action="/stats/hitting" method="get" style="margin-top: 100px">
+            {% endif %}
+                {% if request.GET.proj %}
+                    <input type="hidden" value="{{ request.GET.proj }}" name="proj">
+                {% endif %}
+                {% if request.GET.proj_sys %}
+                    <input type="hidden" value="{{ request.GET.proj_sys }}" name="proj_sys">
+                {% endif %}
+                <ul class="form-list">
+                    <li style="width: fit-content; display: inline-block">
+                        <div class="dropdown">
+                            <button class="btn btn-success dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Included Stats
+                            </button>
+                            <select name="include" class="multiselect dropdown-menu" multiple="multiple" aria-labelledby="dropdownMenuButton" style="width: 100px; white-space: normal; height: {{ field_names|length|divide:2|multiply:12 }}px; overflow: hidden">
+                                {% for field in field_names %}
+                                    {% if field|slice:'1' != 'f' and field != 'id' and field != 'player' and field != 'year' and field != 'is_projection' and field != 'projection_system'%}
+                                        <option value="{{ field }}" {% if field in included_field_names %}selected{% endif %}>{{ field|capfirst }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </li>
+                    <li style="width: fit-content; display: inline-block">
+                        <div class="dropdown">
+                            <button class="btn btn-success dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Year
+                            </button>
+                            <select name="year" class="multiselect dropdown-menu" multiple="multiple" aria-labelledby="dropdownMenuButton" style="white-space: normal; overflow: hidden">
+                                {% for year in year_list %}
+                                    <option value="{{ year }}" {% if year|slugify in request.GET.year %}selected{% endif %}>{{ year }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </li>
+                    <li style="width: fit-content; display: inline-block;">
+                        {% if object_list.first|get_class_name == "PitchingStatistics"%}
+                            <input type="text" value="{% if request.GET.min_ip %}{{ request.GET.min_ip }}{% endif %}" class="form-control min_pa" placeholder="Minimum IP" name="min_ip" aria-label="Username" aria-describedby="basic-addon1" style="border-color: #398252; background-color: #c5e8d1">
+                        {% else %}
+                            <input type="text" value="{% if request.GET.min_pa %}{{ request.GET.min_pa }}{% endif %}" class="form-control min_pa" placeholder="Minimum PA" name="min_pa" aria-label="Username" aria-describedby="basic-addon1" style="border-color: #398252; background-color: #c5e8d1">
+                        {% endif %}
+                    </li>
+                    <li style="width: fit-content; display: inline-block;">
+                        <button type="submit" class="btn btn-success btn-sm" style="line-height: 2">Search</button>
+                    </li>
+                </ul>
+            </form>
+        {% endif %}
     </div>
     <div style="width: 90%; margin: 0 auto; height: 100vh;">
         <table id="hitting-stats" class="table table-striped table-bordered">
             <thead>
                 <tr>
                     {% for field in included_field_names %}
-                        {% if field != 'id' and field != 'is_projection'%}
+                        {% if field|slice:'1' == 'f' %}
+                            <th scope="col">{{ field }}</th>
+                        {% elif field != 'id' and field != 'is_projection'%}
                             <th scope="col">{{ field|capfirst }}</th>
                         {% endif %}
                     {% endfor %}
@@ -66,18 +141,29 @@
             <tbody>
                 {% for stat in object_list %}
                     <tr>
-                        {% for field in stat.get_field_names_and_values %}
-                            {% if field.name in included_field_names%}
-                                {% if field.name == 'AVG' or field.name == 'OBP' or field.name == 'OPS' %}
-                                    <td>{{ field.value|floatformat:3 }}</td>
-                                {% elif field.name == "K_BB" %}
-                                    <td>{{ field.value|floatformat:2 }}</td>
-                                {% elif field.value != None and field.name != 'id' and field.name != 'is_projection' and field.name != 'fTotal'%}
-                                    <td>{{ field.value }}</td>
+                        {% for field in included_field_names %}
+                            {% if field|upper == "FTOTAL" %}
+                                <td>{{ stat|fTotal:context }}</td>
+                            {% elif bigboard and stat|get_class_name == 'PitchingStatistics' and field in pitching_stats or stat|get_class_name == 'HittingStatistics' and field in hitting_stats %}
+                                <td>{{ stat|get_stat:field }}</td>
+                            {% elif not bigboard %}
+                                {% if field == 'AVG' or field == 'SLG' or field == 'OBP' or field == 'OPS' %}
+                                    {% if stat|get_stat:field <  1 %}
+                                        <td>.{{ stat|get_stat:field|floatformat:3|slugify|slice:'1:' }}</td>
+                                    {% else %}
+                                        <td>{{ stat|get_stat:field|floatformat:3 }}</td>
+                                    {% endif %}
+                                {% elif field == "K_BB" %}
+                                    <td>{{ stat|get_stat:field|floatformat:2 }}</td>
+                                {% else %}
+                                    <td>{{ stat|get_stat:field }}</td>
                                 {% endif %}
+                            {% elif field == 'player' or field == 'year' %}
+                                <td>{{ stat|get_stat:field }}</td>
+                            {% else %}
+                                <td>-</td>
                             {% endif %}
                         {% endfor %}
-                        <td>{{ stat|fTotal:context }}</td>
                     </tr>
                 {% endfor %}
             </tbody>
@@ -85,6 +171,8 @@
     </div>
 
     <style>
+        .form-list{list-style: none; display: block; text-align: center; margin-bottom: 2.5em; padding: 0 10% 0 10%}
+        .form-list button{margin-top: -5px}
         .multiselect option::before{
             content: '\2610';
             width: 1.3em;
@@ -98,7 +186,7 @@
             display:inline-table;
             width: 50%
         }
-        td{white-space: nowrap}
+        td{white-space: nowrap; text-align: center}
         .nav{position: fixed; width: 100%; top: 0; background: white; z-index: 9}
         table.dataTable thead .sorting, table.dataTable thead .sorting_asc, table.dataTable thead .sorting_desc{background-image: unset}
         .dataTables_wrapper .dataTables_paginate .paginate_button{padding: unset;}
@@ -115,7 +203,10 @@
     <script>
         $(document).ready(function () {
             var ModelName = '{{ object_list.first|get_class_name }}'
-            if(ModelName === 'PitchingStatistics'){
+            if({{ bigboard|yesno:"true,false" }}){
+                $('.bigboard').addClass('active');
+            }
+            else if(ModelName === 'PitchingStatistics'){
                 $('.pitching').addClass('active');
             }
             else {

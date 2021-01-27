@@ -10,12 +10,12 @@ class PlayerAdmin(admin.ModelAdmin):
 
 @admin.register(HittingStatistics)
 class StatisticsAdmin(admin.ModelAdmin):
-    list_display = ('player', 'year', 'is_projection')
+    list_display = ('player', 'year', 'is_projection', 'projection_system')
     search_fields = ('player__lName', 'player__fName', 'year')
 
 
 @admin.register(PitchingStatistics)
 class PitchingStatisticsAdmin(admin.ModelAdmin):
-    list_display = ('player', 'year', 'is_projection')
+    list_display = ('player', 'year', 'is_projection', 'projection_system')
     ordering = ('player__lName', 'player__fName')
     search_fields = ('player__lName', 'player__fName', 'year')

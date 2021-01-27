@@ -11,6 +11,7 @@ class Command(BaseCommand):
         parser.add_argument('file_name', type=str)
         parser.add_argument('year', type=int)
         parser.add_argument('--is_proj', action='store_true')
+        parser.add_argument('proj_sys', type=str, default=None)
 
     def handle(self, *args, **options):
         with open(options['file_name'], 'r') as file:
@@ -23,7 +24,7 @@ class Command(BaseCommand):
                 player, player_created = Player.objects.get_or_create(fName=fName,
                                                                       lName=lName)
                 player.save()
-                statistic, stat_created = HittingStatistics.objects.get_or_create(player=player, year=options['year'], is_projection=options['is_proj'])
+                statistic, stat_created = HittingStatistics.objects.get_or_create(player=player, year=options['year'], is_projection=options['is_proj'], projection_system=options['proj_sys'])
                 for item in row.items():
                     if item[0] in statistic.get_field_names():
                         setattr(statistic, item[0], item[1])

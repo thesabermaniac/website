@@ -33,6 +33,7 @@ class HittingStatistics(models.Model):
     player = models.ForeignKey(Player, on_delete=models.CASCADE)
     year = models.PositiveSmallIntegerField(verbose_name="Year")
     is_projection = models.BooleanField(default=False)
+    projection_system = models.CharField(max_length=20, blank=True, null=True)
     G = models.PositiveSmallIntegerField(verbose_name="Games Played",
                                          default=0)
     PA = models.PositiveSmallIntegerField(verbose_name="Plate Appearances",
@@ -61,14 +62,22 @@ class HittingStatistics(models.Model):
                                           default=0)
     CS = models.PositiveSmallIntegerField(verbose_name="Caught Stealing",
                                           default=0)
-    AVG = models.FloatField(verbose_name="Batting Average",
-                            default=0.0)
-    OBP = models.FloatField(verbose_name="On-Base Percentage",
-                            default=0.0)
-    SLG = models.FloatField(verbose_name="Slugging Percentage",
-                            default=0.0)
-    OPS = models.FloatField(verbose_name="On-Base Plus Slugging",
-                            default=0.0)
+    AVG = models.DecimalField(verbose_name="Batting Average",
+                              default=0.000,
+                              decimal_places=3,
+                              max_digits=4)
+    OBP = models.DecimalField(verbose_name="On-Base Percentage",
+                              default=0.000,
+                              decimal_places=3,
+                              max_digits=4)
+    SLG = models.DecimalField(verbose_name="Slugging Percentage",
+                              default=0.00,
+                              decimal_places=3,
+                              max_digits=4)
+    OPS = models.DecimalField(verbose_name="On-Base Plus Slugging",
+                              default=0.00,
+                              decimal_places=3,
+                              max_digits=4)
     fG = models.SmallIntegerField(verbose_name="Fantasy Games Played",
                                   default=0)
     fPA = models.SmallIntegerField(verbose_name="Fantasy Plate Appearances",
@@ -105,12 +114,11 @@ class HittingStatistics(models.Model):
                                     default=0)
     fOPS = models.SmallIntegerField(verbose_name="Fantasy On-Base Plus Slugging",
                                     default=0)
-    fTotal = models.SmallIntegerField(verbose_name="Fantasy Total",
-                                      default=0)
+    # fTotal = models.SmallIntegerField(verbose_name="Fantasy Total",
+    #                                   default=0)
 
     class Meta:
         verbose_name_plural = 'Hitting Statistics'
-        ordering = ('fTotal', 'id')
 
     def get_field_names_and_values(self):
         name_list = []
@@ -133,14 +141,19 @@ class PitchingStatistics(models.Model):
     player = models.ForeignKey(Player, on_delete=models.CASCADE)
     year = models.PositiveSmallIntegerField(verbose_name="Year")
     is_projection = models.BooleanField(default=False)
+    projection_system = models.CharField(max_length=20, blank=True, null=True)
     W = models.SmallIntegerField(verbose_name="Wins",
                                  default=0)
     L = models.SmallIntegerField(verbose_name="Losses",
                                  default=0)
-    ERA = models.FloatField(verbose_name="Earned Run Average",
-                            default=0.0)
-    WHIP = models.FloatField(verbose_name="Walks + Hits/IP",
-                             default=0.0)
+    ERA = models.DecimalField(verbose_name="Earned Run Average",
+                              default=0.00,
+                              decimal_places=2,
+                              max_digits=5)
+    WHIP = models.DecimalField(verbose_name="Walks + Hits/IP",
+                               default=0.00,
+                               decimal_places=2,
+                               max_digits=5)
     G = models.SmallIntegerField(verbose_name="Games Played",
                                  default=0)
     GS = models.SmallIntegerField(verbose_name="Games Started",
@@ -181,16 +194,18 @@ class PitchingStatistics(models.Model):
                                   default=0)
     SVH = models.SmallIntegerField(verbose_name="Saves + Holds",
                                    default=0)
-    K_BB = models.FloatField(verbose_name="Strikeouts per Walk",
-                             default=0)
+    K_BB = models.DecimalField(verbose_name="Strikeouts per Walk",
+                               default=0.00,
+                               decimal_places=2,
+                               max_digits=5)
     fW = models.SmallIntegerField(verbose_name="Fantasy Wins",
                                   default=0)
     fL = models.SmallIntegerField(verbose_name="Fantasy Losses",
                                   default=0)
-    fERA = models.FloatField(verbose_name="Fantasy Earned Run Average",
-                             default=0.0)
-    fWHIP = models.FloatField(verbose_name="Fantasy Walks + Hits/IP",
-                              default=0.0)
+    fERA = models.SmallIntegerField(verbose_name="Fantasy Earned Run Average",
+                                    default=0)
+    fWHIP = models.SmallIntegerField(verbose_name="Fantasy Walks + Hits/IP",
+                                     default=0)
     fG = models.SmallIntegerField(verbose_name="Fantasy Games Played",
                                   default=0)
     fGS = models.SmallIntegerField(verbose_name="Fantasy Games Started",
@@ -205,8 +220,8 @@ class PitchingStatistics(models.Model):
                                     default=0)
     fBS = models.SmallIntegerField(verbose_name="Fantasy Blown Saves",
                                    default=0)
-    fIP = models.FloatField(verbose_name="Fantasy Innings Pitched",
-                            default=0.0)
+    fIP = models.SmallIntegerField(verbose_name="Fantasy Innings Pitched",
+                                   default=0)
     fTBF = models.SmallIntegerField(verbose_name="Fantasy Total Batters Faced",
                                     default=0)
     fH = models.SmallIntegerField(verbose_name="Fantasy Hits Allowed",
@@ -231,12 +246,11 @@ class PitchingStatistics(models.Model):
                                     default=0)
     fK_BB = models.SmallIntegerField(verbose_name="Fantasy K/BB",
                                      default=0)
-    fTotal = models.SmallIntegerField(verbose_name="Fantasy Total",
-                                      default=0)
+    # fTotal = models.SmallIntegerField(verbose_name="Fantasy Total",
+    #                                   default=0)
 
     class Meta:
         verbose_name_plural = 'Pitching Statistics'
-        ordering = ('fTotal', 'id')
 
     def get_field_names_and_values(self):
         name_list = []
@@ -260,6 +274,7 @@ class PitchingStatistics(models.Model):
         return self.player.get_operable_string() + "_" + str(self.year)
 
     def save(self, *args, **kwargs):
-        self.SVH = self.SV + self.HLD
-        self.K_BB = self.SO/self.BB if self.BB > 0 else self.SO
+        self.SVH = int(self.SV) + int(self.HLD)
+        self.K_BB = int(self.SO)/int(self.BB) if int(self.BB) > 0 else int(self.SO)
+
         super(PitchingStatistics, self).save(*args, **kwargs)
