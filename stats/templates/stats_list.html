@@ -217,11 +217,13 @@
         input[type=text]:valid + label, input[type=text]:focus + label{top: -22px; opacity: 1}
         .text-input label{position:absolute; top: 5px; left: 5px; opacity: .5}
         input[type=text] ~ label{transition: top 1s, opacity 1s}
+        .dataTables_wrapper .dataTables_paginate .paginate_button.current, .dataTables_wrapper .dataTables_paginate .paginate_button.current:hover{background: #3ead64 !important; color: #fff !important;}
+        .dataTables_wrapper .dataTables_paginate .paginate_button:hover{background: #398252 !important; border-color: #398252 !important;}
     </style>
 {% endblock %}
 
 {% block extra_js %}
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/jszip-2.5.0/dt-1.10.24/b-1.7.0/b-colvis-1.7.0/b-html5-1.7.0/b-print-1.7.0/datatables.min.css"/>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/datatables.min.css' %}"/>
 
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
