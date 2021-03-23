@@ -221,6 +221,12 @@
 {% endblock %}
 
 {% block extra_js %}
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/jszip-2.5.0/dt-1.10.24/b-1.7.0/b-colvis-1.7.0/b-html5-1.7.0/b-print-1.7.0/datatables.min.css"/>
+
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/v/dt/jszip-2.5.0/dt-1.10.24/b-1.7.0/b-colvis-1.7.0/b-html5-1.7.0/b-print-1.7.0/datatables.min.js"></script>
+
     <script>
         $(document).ready(function () {
             var ModelName = '{{ object_list.first|get_class_name }}';
@@ -244,8 +250,15 @@
             });
             var index = $('#hitting-stats').find('th:last').index();
             var t = $('#hitting-stats').DataTable({
+                dom:
+                    "<'row'<'col-sm-1'B><'col-sm-6 text-center'l><'col-sm-5'f>>" +
+                    "<'row'<'col-sm-12'tr>>" +
+                    "<'row'<'col-sm-5'i><'col-sm-7'p>>",
+                buttons:[
+                    {extend: 'csv', text: 'Export'}
+                ],
                 "lengthMenu": [[10, 25, 50, 100, 250, -1], [10, 25, 50, 100, 250, "All"]],
-                "order": [[index, 'desc']]
+                "order": [[index, 'desc']],
             });
             t.on( 'order.dt', function () {
                 t.column(0, {order:'applied'}).nodes().each( function (cell, i) {
