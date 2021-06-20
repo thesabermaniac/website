@@ -12,7 +12,7 @@ class Command(BaseCommand):
         parser.add_argument('file_name', type=str)
         parser.add_argument('year', type=int)
         parser.add_argument('--is_proj', action='store_true')
-        parser.add_argument('proj_sys', type=str, default=None)
+        parser.add_argument('-proj_sys', type=str, default=None, )
 
     def handle(self, *args, **options):
         with open(options['file_name'], 'r') as file:

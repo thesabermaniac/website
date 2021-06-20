@@ -9,7 +9,7 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('year', type=int)
         parser.add_argument('--is_proj', action='store_true')
-        parser.add_argument('proj_sys', type=str, default=None)
+        parser.add_argument('-proj_sys', type=str, default=None)
 
     def handle(self, *args, **options):
         stat_list = ['W', 'L', 'ERA', 'WHIP', 'G', 'GS', 'CG', 'ShO', 'SV', 'HLD', 'BS',
@@ -26,7 +26,7 @@ class Command(BaseCommand):
                 control = 100/(min_stat - max) if max != 0 and min_stat != 0 else 0
             for row in qs:
                 if getattr(row, stat):
-                    result = (getattr(row, stat) * control) + 100 if stat in reverse_list else getattr(row, stat) * control
+                    result = (float(getattr(row, stat)) * float(control)) + 100 if stat in reverse_list else float(getattr(row, stat)) * float(control)
                 else:
                     result = 0
                 setattr(row, fStat, int(result))
