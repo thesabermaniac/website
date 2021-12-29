@@ -25,7 +25,6 @@
                 { label: '{{ player.name }}', value: '{{ player.fangraphs_id }}'},
             {% endfor %}
         ];
-        console.log(availableTags)
         $("#id_name").autocomplete({
             source: availableTags,
             focus: function (event, ui){
