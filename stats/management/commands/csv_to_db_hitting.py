@@ -18,11 +18,9 @@ class Command(BaseCommand):
             csv_reader = csv.DictReader(file)
             csv_reader.fieldnames[0] = 'Name'
             for row in csv_reader:
-                name_list = row.get('Name').split()
-                fName = name_list[0]
-                lName = name_list[1]
-                player, player_created = Player.objects.get_or_create(fName=fName,
-                                                                      lName=lName)
+                player, player_created = Player.objects.get_or_create(fangraphs_id=row.get('playerid'))
+                if player_created:
+                    player.name = row.get('Name')
                 player.save()
                 statistic, stat_created = HittingStatistics.objects.get_or_create(player=player, year=options['year'], is_projection=options['is_proj'], projection_system=options['proj_sys'])
                 for item in row.items():

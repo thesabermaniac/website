@@ -76,17 +76,14 @@ TEMPLATES = [
 WSGI_APPLICATION = 'thesabermaniac.wsgi.application'
 
 
-# Database
-# https://docs.djangoproject.com/en/3.0/ref/settings/#databases
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'thesabermaniac',
+        'NAME': 'sabermaniac',
         'USER': 'postgres',
-        'PASSWORD': 'password',
-        'HOST': '127.0.0.1',
-        'PORT': '5433',
+        'PASSWORD': 'sifra123',
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
 
@@ -136,3 +133,5 @@ STATICFILES_DIRS =(
 
 DEFAULT_YEAR = 2020
 DEFAULT_YEAR_PROJ = 2021
+
+DEFAULT_AUTO_FIELD='django.db.models.AutoField'

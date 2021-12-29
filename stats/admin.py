@@ -4,18 +4,19 @@ from .models import Player, HittingStatistics, PitchingStatistics
 
 @admin.register(Player)
 class PlayerAdmin(admin.ModelAdmin):
-    fields = ('fName', 'lName', 'position')
-    list_display = ('fName', 'lName', 'position')
+    fields = ('name', 'position')
+    list_display = ('name', 'position')
+    search_fields = ['name']
 
 
 @admin.register(HittingStatistics)
 class StatisticsAdmin(admin.ModelAdmin):
     list_display = ('player', 'year', 'is_projection', 'projection_system')
-    search_fields = ('player__lName', 'player__fName', 'year')
+    search_fields = ('player__name', 'year')
 
 
 @admin.register(PitchingStatistics)
 class PitchingStatisticsAdmin(admin.ModelAdmin):
     list_display = ('player', 'year', 'is_projection', 'projection_system')
-    ordering = ('player__lName', 'player__fName')
-    search_fields = ('player__lName', 'player__fName', 'year')
+    ordering = ['player__name']
+    search_fields = ('player__name', 'year')

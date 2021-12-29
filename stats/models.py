@@ -15,22 +15,22 @@ class Player(models.Model):
         ("RF", "Right Field"),
         ("DH", "Designated Hitter")
     )
-    fName = models.CharField(max_length=50, verbose_name="First Name")
-    lName = models.CharField(max_length=50, verbose_name="Last Name")
+    name = models.CharField(max_length=50, verbose_name="First Name")
     position = models.CharField(max_length=2,
                                 choices=POSITION_CHOICES,
                                 blank=True,
                                 null=True)
+    fangraphs_id = models.CharField(max_length=10, unique=True, primary_key=True)
 
     def __str__(self):
-        return self.fName + " " + self.lName
+        return self.name
 
     def get_operable_string(self):
-        return self.fName + "_" + self.lName
+        return self.name
 
 
 class HittingStatistics(models.Model):
-    player = models.ForeignKey(Player, on_delete=models.CASCADE)
+    player = models.ForeignKey(Player, to_field='fangraphs_id', on_delete=models.CASCADE)
     year = models.PositiveSmallIntegerField(verbose_name="Year")
     is_projection = models.BooleanField(default=False)
     projection_system = models.CharField(max_length=20, blank=True, null=True)
@@ -138,7 +138,7 @@ class HittingStatistics(models.Model):
 
 
 class PitchingStatistics(models.Model):
-    player = models.ForeignKey(Player, on_delete=models.CASCADE)
+    player = models.ForeignKey(Player, to_field='fangraphs_id', on_delete=models.CASCADE)
     year = models.PositiveSmallIntegerField(verbose_name="Year")
     is_projection = models.BooleanField(default=False)
     projection_system = models.CharField(max_length=20, blank=True, null=True)
