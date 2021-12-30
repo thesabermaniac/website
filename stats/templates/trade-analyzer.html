@@ -3,9 +3,19 @@
 {% block title %}Sabermaniac | Trade Analyzer{% endblock %}
 
 {% block content %}
-    <form action="/trade-analyzer/" method="post">
+    <form action="/trade-analyzer/" method="post" id="trade_form">
         {% csrf_token %}
-        {{ form.as_p }}
+        {% for hidden in form.hidden_fields %}
+            {{ hidden.errors }}
+            {{ hidden }}
+        {% endfor %}
+        {% for field in form.visible_fields %}
+            <h4>Team 1</h4>
+            <div id="player1">
+                {{ field.errors }}
+                {{ field }}
+            </div>
+        {% endfor %}
         <input type="submit" value="Send">
     </form>
     <p>{{ fTotal }}</p>
@@ -16,6 +26,32 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.js"></script>
     <link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/themes/ui-lightness/jquery-ui.css" rel="stylesheet" type="text/css" />
     <script>
+        var next = 1;
+
+        function addField(next, availableTags){
+                var addTo = "#player" + next;
+                next = next + 1;
+                var newIn = '<input type="hidden" name="fangraphs_id' + next + '" id="id_fangraphs_id' + next + '"><div id = "player' + next + '"> <input type="text" name="name' + next + '" id="id_name' + next + '">'
+                var newInput = $(newIn);
+                $(addTo).after(newInput);
+
+                $("#id_name" + next).autocomplete({
+                    source: availableTags,
+                    focus: function (event, ui){
+                        event.preventDefault();
+                        $("#id_name" + next).val(ui.item.label);
+                    },
+                    select: function (event, ui) {
+                        event.preventDefault();
+                        $("#id_name" + next).val(ui.item.label);
+                        $("#id_fangraphs_id" + next).val(ui.item.value);
+
+                        addField(next, availableTags);
+                    }
+
+                })
+        };
+
         $(function (){
             var availableTags = [
                 {% for player in players %}
@@ -28,10 +64,12 @@
                     event.preventDefault();
                     $("#id_name").val(ui.item.label);
                 },
-                select: function (event, ui){
+                select: function (event, ui) {
                     event.preventDefault();
                     $("#id_name").val(ui.item.label);
                     $("#id_fangraphs_id").val(ui.item.value);
+
+                    addField(next, availableTags);
                 }
             });
         });
