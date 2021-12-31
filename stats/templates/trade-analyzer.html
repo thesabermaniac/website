@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load my_tags %}
 
 {% block title %}Sabermaniac | Trade Analyzer{% endblock %}
 
@@ -14,6 +15,7 @@
             <div id="player1">
                 {{ field.errors }}
                 {{ field }}
+                <label id="fscore1"></label>
             </div>
         {% endfor %}
         <input type="submit" value="Send">
@@ -25,13 +27,21 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.js"></script>
     <link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/themes/ui-lightness/jquery-ui.css" rel="stylesheet" type="text/css" />
+
     <script>
         var next = 1;
+        let hittingFScores = {{ hitting_fScores|safe }};
+        let pitchingFScores = {{ pitching_fScores|safe }};
 
-        function addField(next, availableTags){
+        function addField(next, availableTags, y){
                 var addTo = "#player" + next;
+                let score = hittingFScores[y.item.value];
+                if(score == null){
+                    score = pitchingFScores[y.item.value];
+                }
+                $("#fscore" + next).html(score);
                 next = next + 1;
-                var newIn = '<input type="hidden" name="fangraphs_id' + next + '" id="id_fangraphs_id' + next + '"><div id = "player' + next + '"> <input type="text" name="name' + next + '" id="id_name' + next + '">'
+                var newIn = '<input type="hidden" name="fangraphs_id' + next + '" id="id_fangraphs_id' + next + '"><div id = "player' + next + '"> <input type="text" name="name' + next + '" id="id_name' + next + '"><label id=fscore' + next + '></label>'
                 var newInput = $(newIn);
                 $(addTo).after(newInput);
 
@@ -46,7 +56,7 @@
                         $("#id_name" + next).val(ui.item.label);
                         $("#id_fangraphs_id" + next).val(ui.item.value);
 
-                        addField(next, availableTags);
+                        addField(next, availableTags, ui);
                     }
 
                 })
@@ -69,9 +79,21 @@
                     $("#id_name").val(ui.item.label);
                     $("#id_fangraphs_id").val(ui.item.value);
 
-                    addField(next, availableTags);
+                    addField(next, availableTags, ui);
                 }
             });
+
+            $("#trade_form").submit(function (e){
+                e.preventDefault();
+                let total = 0;
+                $("#trade_form label").each(function (){
+                    let score = parseInt($(this).text());
+                    if(!isNaN(score)){
+                        total = total + score;
+                    }
+                });
+                $("#trade_form").after(total);
+            })
         });
     </script>
 {% endblock %}

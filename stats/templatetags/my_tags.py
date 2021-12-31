@@ -36,7 +36,7 @@ def multiply(a, b):
 
 @register.filter
 def divide(a, b):
-    return a/b
+    return a / b
 
 
 @register.filter

@@ -124,7 +124,7 @@ class TradeAnalyzer(FormView):
     def form_valid(self, form, **kwargs):
         name = form.data['name']
         id = form.data['fangraphs_id']
-        player, created = Player.objects.get_or_create(name=name, fangraphs_id=id)
+        player, created = Player.objects.get_or_create(fangraphs_id=id)
         try:
             hitting_stats, created = HittingStatistics.objects.get_or_create(player=player.fangraphs_id, year=2022)
             f_total = (hitting_stats.fOPS + hitting_stats.fAVG + hitting_stats.fHR + hitting_stats.fR + hitting_stats.fSB + hitting_stats.fRBI)/6
@@ -141,5 +141,7 @@ class TradeAnalyzer(FormView):
     def get_context_data(self, **kwargs):
         context = super(TradeAnalyzer, self).get_context_data(**kwargs)
         context['players'] = Player.objects.all()
+        context['hitting_fScores'] = {hitter.player.fangraphs_id: round((hitter.fOPS + hitter.fAVG + hitter.fR + hitter.fRBI + hitter.fHR + hitter.fSB)/6) for hitter in HittingStatistics.objects.filter(year=2022)}
+        context['pitching_fScores'] = {pitcher.player.fangraphs_id: round((pitcher.fERA + pitcher.fWHIP + pitcher.fW + pitcher.fSO + pitcher.fSVH + pitcher.fK_BB)/6) for pitcher in PitchingStatistics.objects.filter(year=2022)}
         return context
 
