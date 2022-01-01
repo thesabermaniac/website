@@ -1,8 +1,5 @@
-from django.shortcuts import render
 from django.views.generic import *
 from stats.models import HittingStatistics, Player, PitchingStatistics
-from thesabermaniac.forms import TradeForm
-from django.db.models import *
 from django.conf import settings
 
 from itertools import chain
@@ -106,37 +103,8 @@ class StatsListView(ListView):
         return context
 
 
-class TradeAnalyzer(FormView):
+class TradeAnalyzer(TemplateView):
     template_name = 'trade-analyzer.html'
-    form_class = TradeForm
-    success_url = '/trade-analyzer/'
-    context = {}
-    f_total = 0
-
-    def post(self, request, *args, **kwargs):
-        form_class = self.get_form_class()
-        form = self.get_form(form_class)
-        if form.is_valid():
-            return self.form_valid(form, **kwargs)
-        else:
-            return self.form_invalid(form)
-
-    def form_valid(self, form, **kwargs):
-        name = form.data['name']
-        id = form.data['fangraphs_id']
-        player, created = Player.objects.get_or_create(fangraphs_id=id)
-        try:
-            hitting_stats, created = HittingStatistics.objects.get_or_create(player=player.fangraphs_id, year=2022)
-            f_total = (hitting_stats.fOPS + hitting_stats.fAVG + hitting_stats.fHR + hitting_stats.fR + hitting_stats.fSB + hitting_stats.fRBI)/6
-        except:
-            try:
-                pitching_stats, created = PitchingStatistics.objects.get_or_create(player=player.fangraphs_id, year=2022)
-                f_total = (pitching_stats.fW + pitching_stats.fSO + pitching_stats.fSVH + pitching_stats.fERA + pitching_stats.fWHIP + pitching_stats.fK_BB)/6
-            except Exception as e:
-                print(e)
-        context = self.get_context_data(**kwargs)
-        context['fTotal'] = round(f_total)
-        return self.render_to_response(context)
 
     def get_context_data(self, **kwargs):
         context = super(TradeAnalyzer, self).get_context_data(**kwargs)

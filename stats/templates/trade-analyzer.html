@@ -4,23 +4,39 @@
 {% block title %}Sabermaniac | Trade Analyzer{% endblock %}
 
 {% block content %}
-    <form action="/trade-analyzer/" method="post" id="trade_form">
-        {% csrf_token %}
-        {% for hidden in form.hidden_fields %}
-            {{ hidden.errors }}
-            {{ hidden }}
-        {% endfor %}
-        {% for field in form.visible_fields %}
-            <h4>Team 1</h4>
-            <div id="player1">
-                {{ field.errors }}
-                {{ field }}
-                <label id="fscore1"></label>
-            </div>
-        {% endfor %}
-        <input type="submit" value="Send">
-    </form>
-    <p>{{ fTotal }}</p>
+    <div style="text-align: center">
+        <div style="width: 30%; display: inline-table; vertical-align: top">
+            <form action="" method="post" id="trade_form1" style="display: inline-block; position: relative">
+                {% csrf_token %}
+                <input type="hidden" name="fangraphs_id" id="fangraphs_id1">
+                <h4>Team A</h4>
+                <div id="player1">
+                    <input type="text" name="name1" required id="name1">
+                    <label class="fscore_label" id="fscore1" style="margin-left: -4px"></label>
+                </div>
+                <input type="submit" value="Send" style="margin-right: 25px">
+                <p id="total_score" style="text-align: center; margin-right: 25px"></p>
+            </form>
+        </div>
+
+        <div style="width: 30%; display: inline-table; vertical-align: top">
+            <form action="" method="post" id="trade_form2" style="display: inline-block; position: relative">
+                {% csrf_token %}
+                <input type="hidden" name="fangraphs_id" id="fangraphs_id1">
+                <h4>Team B</h4>
+                <div id="player1">
+                    <input type="text" name="name1" required id="name1">
+                    <label class="fscore_label" id="fscore1" style="margin-left: -4px"></label>
+                </div>
+                <input type="submit" value="Send" style="margin-right: 25px">
+                <p id="total_score" style="text-align: center; margin-right: 25px"></p>
+            </form>
+        </div>
+    </div>
+
+    <style>
+        .fscore_label{width: 25px}
+    </style>
 {% endblock %}
 
 {% block extra_js %}
@@ -29,71 +45,91 @@
     <link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/themes/ui-lightness/jquery-ui.css" rel="stylesheet" type="text/css" />
 
     <script>
-        var next = 1;
+        let next = 1;
         let hittingFScores = {{ hitting_fScores|safe }};
         let pitchingFScores = {{ pitching_fScores|safe }};
+        let availableTags = [
+            {% for player in players %}
+                { label: '{{ player.name }}', value: '{{ player.fangraphs_id }}'},
+            {% endfor %}
+        ];
 
-        function addField(next, availableTags, y){
-                var addTo = "#player" + next;
-                let score = hittingFScores[y.item.value];
-                if(score == null){
-                    score = pitchingFScores[y.item.value];
+        function setAutoComplete(formId){
+            let ogValue = "";
+            $(formId + " #name1").autocomplete({
+                source: availableTags,
+                focus: function (event, ui){
+                    event.preventDefault();
+                    $(formId + " #name1").val(ui.item.label);
+                },
+                select: function (event, ui) {
+                    event.preventDefault();
+                    $(formId + " #name1").val(ui.item.label);
+                    $(formId + " #fangraphs_id1").val(ui.item.value);
+
+                    let score = hittingFScores[ui.item.value];
+                    if(score == null){
+                        score = pitchingFScores[ui.item.value];
+                    }
+                    $(formId + " #fscore1").html(score);
+
+                    if(ogValue === "") {
+                        addField(next, availableTags, ui, formId);
+                        ogValue = ui.item.label;
+                    }
                 }
-                $("#fscore" + next).html(score);
+            });
+
+            $(formId).submit(function (e){
+                e.preventDefault();
+                let total = 0;
+                $(formId + " label").each(function (){
+                    let score = parseInt($(this).text());
+                    if(!isNaN(score)){
+                        total = total + score;
+                    }
+                });
+                $(formId + " #total_score").html(total);
+            })
+        }
+
+        function addField(next, availableTags, y, formId){
+                let ogValue = ""
+                var addTo = formId + " #player" + next;
                 next = next + 1;
-                var newIn = '<input type="hidden" name="fangraphs_id' + next + '" id="id_fangraphs_id' + next + '"><div id = "player' + next + '"> <input type="text" name="name' + next + '" id="id_name' + next + '"><label id=fscore' + next + '></label>'
+                var newIn = '<input type="hidden" name="fangraphs_id' + next + '" id="fangraphs_id' + next + '"><div id = "player' + next + '"> <input type="text" name="name' + next + '" id="name' + next + '"><label class="fscore_label" id=fscore' + next + '></label>'
                 var newInput = $(newIn);
                 $(addTo).after(newInput);
 
-                $("#id_name" + next).autocomplete({
+                $(formId + " #name" + next).autocomplete({
                     source: availableTags,
                     focus: function (event, ui){
                         event.preventDefault();
-                        $("#id_name" + next).val(ui.item.label);
+                        $(formId + " #name" + next).val(ui.item.label);
                     },
                     select: function (event, ui) {
                         event.preventDefault();
-                        $("#id_name" + next).val(ui.item.label);
-                        $("#id_fangraphs_id" + next).val(ui.item.value);
+                        $(formId + " #name" + next).val(ui.item.label);
+                        $(formId + " #fangraphs_id" + next).val(ui.item.value);
 
-                        addField(next, availableTags, ui);
+                        let score = hittingFScores[ui.item.value];
+                        if(score == null){
+                            score = pitchingFScores[ui.item.value];
+                        }
+                        $(formId + " #fscore" + next).html(score);
+
+                        if(ogValue === "") {
+                            addField(next, availableTags, ui, formId);
+                            ogValue = ui.item.label;
+                        }
                     }
 
                 })
         };
 
         $(function (){
-            var availableTags = [
-                {% for player in players %}
-                    { label: '{{ player.name }}', value: '{{ player.fangraphs_id }}'},
-                {% endfor %}
-            ];
-            $("#id_name").autocomplete({
-                source: availableTags,
-                focus: function (event, ui){
-                    event.preventDefault();
-                    $("#id_name").val(ui.item.label);
-                },
-                select: function (event, ui) {
-                    event.preventDefault();
-                    $("#id_name").val(ui.item.label);
-                    $("#id_fangraphs_id").val(ui.item.value);
-
-                    addField(next, availableTags, ui);
-                }
-            });
-
-            $("#trade_form").submit(function (e){
-                e.preventDefault();
-                let total = 0;
-                $("#trade_form label").each(function (){
-                    let score = parseInt($(this).text());
-                    if(!isNaN(score)){
-                        total = total + score;
-                    }
-                });
-                $("#trade_form").after(total);
-            })
+            setAutoComplete("#trade_form1");
+            setAutoComplete("#trade_form2");
         });
     </script>
 {% endblock %}
