@@ -7,7 +7,7 @@ For more information on this file, see
 https://docs.djangoproject.com/en/3.0/topics/settings/
 
 For the full list of settings and their values, see
-https://docs.djangoproject.com/en/3.0/ref/settings/
+https://docs.djangoproject.com/en/3.0/ref/settings/y
 """
 
 import os
@@ -131,7 +131,8 @@ STATICFILES_DIRS =(
     'stats/static/'
 )
 
-DEFAULT_YEAR = 2020
-DEFAULT_YEAR_PROJ = 2021
+DEFAULT_YEAR = 2023
+DEFAULT_YEAR_PROJ = 2024
+DEFAULT_PROJ_SYS = 'zeile'
 
 DEFAULT_AUTO_FIELD='django.db.models.AutoField'

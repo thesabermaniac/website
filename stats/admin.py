@@ -4,7 +4,7 @@ from .models import Player, HittingStatistics, PitchingStatistics
 
 @admin.register(Player)
 class PlayerAdmin(admin.ModelAdmin):
-    fields = ('name', 'position')
+    fields = ('name', 'position', 'fangraphs_id')
     list_display = ('name', 'position')
     search_fields = ['name']
 

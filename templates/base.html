@@ -23,7 +23,7 @@
           <a class="nav-link dropdown-toggle bigboard" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Bigboard</a>
           <div class="dropdown-menu" aria-labelledby="navbarDropdown">
               {% for year in bigboard_years %}
-                <a class="dropdown-item" href="/bigboard?hitting=HR&hitting=R&hitting=RBI&hitting=SB&hitting=AVG&hitting=OPS&pitching=W&pitching=ERA&pitching=WHIP&pitching=SO&pitching=SVH&pitching=K_BB&year={{ year }}&min_ip=10&min_pa=186&proj=False">{{ year }}</a>
+                <a class="dropdown-item" href="/bigboard?hitting=HR&hitting=R&hitting=RBI&hitting=SB&hitting=OPS&pitching=W&pitching=ERA&pitching=WHIP&pitching=SO&pitching=SVH&year={{ year }}&min_ip=10&min_pa=186&proj=False">{{ year }}</a>
               {% endfor %}
           </div>
       </li>
@@ -31,7 +31,7 @@
           <a class="nav-link dropdown-toggle hitting" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Hitting</a>
           <div class="dropdown-menu" aria-labelledby="navbarDropdown">
               {% for year in hitting_years %}
-                <a class="dropdown-item" href="/stats/hitting?include=HR&include=R&include=RBI&include=SB&include=AVG&include=OPS&year={{ year }}&min_pa=186&proj=False">{{ year }}</a>
+                <a class="dropdown-item" href="/stats/hitting?include=HR&include=R&include=RBI&include=SB&include=OPS&year={{ year }}&min_pa=186&proj=False">{{ year }}</a>
               {% endfor %}
           </div>
       </li>
@@ -39,7 +39,7 @@
           <a class="nav-link dropdown-toggle pitching" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Pitching</a>
           <div class="dropdown-menu" aria-labelledby="navbarDropdown">
               {% for year in pitching_years %}
-                <a class="dropdown-item" href="/stats/pitching?include=W&include=ERA&include=WHIP&include=SO&include=SVH&include=K_BB&year={{ year }}&min_ip=10&proj=False">{{ year }}</a>
+                <a class="dropdown-item" href="/stats/pitching?include=W&include=ERA&include=WHIP&include=SO&include=SVH&year={{ year }}&min_ip=10&proj=False">{{ year }}</a>
               {% endfor %}
           </div>
       </li>
@@ -48,27 +48,27 @@
           Projections
         </a>
         <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-            <a class="dropdown-item" href="/bigboard?hitting=HR&hitting=R&hitting=RBI&hitting=SB&hitting=AVG&hitting=OPS&pitching=W&pitching=ERA&pitching=WHIP&pitching=SO&pitching=SVH&pitching=K_BB&year={% settings_value "DEFAULT_YEAR_PROJ" %}&min_ip=10&min_pa=186&proj=True&proj_sys=steamer">Bigboard</a>
+            <a class="dropdown-item" href="/bigboard?hitting=HR&hitting=R&hitting=RBI&hitting=SB&hitting=OPS&pitching=W&pitching=ERA&pitching=WHIP&pitching=SO&pitching=SVH&year={% settings_value "DEFAULT_YEAR_PROJ" %}&min_ip=10&min_pa=186&proj=True&proj_sys={% settings_value "DEFAULT_PROJ_SYS" %}">Bigboard</a>
             <ul class="dropdown-list" style="">
                 {% for year in bigboard_years_proj %}
                     <li>
-                        <a href="/bigboard?hitting=HR&hitting=R&hitting=RBI&hitting=SB&hitting=AVG&hitting=OPS&pitching=W&pitching=ERA&pitching=WHIP&pitching=SO&pitching=SVH&pitching=K_BB&year={{ year }}&min_ip=10&min_pa=186&proj=True&proj_sys=steamer">{{ year }}</a>
+                        <a href="/bigboard?hitting=HR&hitting=R&hitting=RBI&hitting=SB&hitting=OPS&pitching=W&pitching=ERA&pitching=WHIP&pitching=SO&pitching=SVH&year={{ year }}&min_ip=10&min_pa=186&proj=True&proj_sys={% settings_value "DEFAULT_PROJ_SYS" %}">{{ year }}</a>
                     </li>
                 {% endfor %}
             </ul>
-            <a class="dropdown-item" href="/stats/hitting?include=HR&include=R&include=RBI&include=SB&include=AVG&include=OPS&year={% settings_value "DEFAULT_YEAR_PROJ" %}&min_pa=186&proj=True&proj_sys=steamer">Hitting</a>
+            <a class="dropdown-item" href="/stats/hitting?include=HR&include=R&include=RBI&include=SB&include=OPS&year={% settings_value "DEFAULT_YEAR_PROJ" %}&min_pa=186&proj=True&proj_sys={% settings_value "DEFAULT_PROJ_SYS" %}">Hitting</a>
             <ul class="dropdown-list" style="">
                 {% for year in hitting_years_proj %}
                     <li>
-                        <a href="/stats/hitting?include=HR&include=R&include=RBI&include=SB&include=AVG&include=OPS&year={{ year }}&min_pa=186&proj=True&proj_sys=steamer">{{ year }}</a>
+                        <a href="/stats/hitting?include=HR&include=R&include=RBI&include=SB&include=OPS&year={{ year }}&min_pa=186&proj=True&proj_sys={% settings_value "DEFAULT_PROJ_SYS" %}">{{ year }}</a>
                     </li>
                 {% endfor %}
             </ul>
-            <a class="dropdown-item" href="/stats/pitching?include=W&include=ERA&include=WHIP&include=SO&include=SVH&include=K_BB&year={% settings_value "DEFAULT_YEAR_PROJ" %}&min_ip=10&proj=True&proj_sys=steamer">Pitching</a>
+            <a class="dropdown-item" href="/stats/pitching?include=W&include=ERA&include=WHIP&include=SO&include=SVH&year={% settings_value "DEFAULT_YEAR_PROJ" %}&min_ip=10&proj=True&proj_sys={% settings_value "DEFAULT_PROJ_SYS" %}">Pitching</a>
             <ul class="dropdown-list" style="">
                 {% for year in pitching_years_proj %}
                     <li>
-                        <a href="/stats/pitching?include=W&include=ERA&include=WHIP&include=SO&include=SVH&include=K_BB&year={{ year }}&min_ip=10&proj=True&proj_sys=steamer">{{ year }}</a>
+                        <a href="/stats/pitching?include=W&include=ERA&include=WHIP&include=SO&include=SVH&year={{ year }}&min_ip=10&proj=True&proj_sys={% settings_value "DEFAULT_PROJ_SYS" %}">{{ year }}</a>
                     </li>
                 {% endfor %}
             </ul>

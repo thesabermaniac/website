@@ -28,6 +28,9 @@ class Player(models.Model):
     def get_operable_string(self):
         return self.name
 
+    class Meta:
+        ordering = ('name', 'fangraphs_id')
+
 
 class HittingStatistics(models.Model):
     player = models.ForeignKey(Player, to_field='fangraphs_id', on_delete=models.CASCADE)
@@ -274,7 +277,12 @@ class PitchingStatistics(models.Model):
         return self.player.get_operable_string() + "_" + str(self.year)
 
     def save(self, *args, **kwargs):
-        self.SVH = int(self.SV) + int(self.HLD)
+        try:
+            self.SVH = int(self.SV) + int(self.HLD)
+        except Exception:
+            self.SVH = 0
+            self.SV = 0
+            self.HLD = 0
         self.K_BB = int(self.SO)/int(self.BB) if int(self.BB) > 0 else int(self.SO)
 
         super(PitchingStatistics, self).save(*args, **kwargs)

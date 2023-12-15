@@ -16,26 +16,58 @@ class Command(BaseCommand):
         reverse_list = ['SO', 'CS']
         rate_stats = ['AVG', 'OBP', 'SLG', 'OPS']
         qs = HittingStatistics.objects.filter(year=options['year'], is_projection=options['is_proj'], projection_system=options['proj_sys'])
-        for stat in stat_list:
-            fStat = "f" + stat
-            max = qs.aggregate(Max(stat))[stat + "__max"]
-            min_stat = qs.aggregate(Min(stat))[stat + "__min"]
-            control = 100/max if max else 0
-            if stat in reverse_list:
-                control = 100/(min_stat - max) if (max and min_stat) else 0
-            for row in qs:
-                result = (((getattr(row, stat) or 0) * control) + 100) if stat in reverse_list else (getattr(row, stat) or 0) * control
-                setattr(row, fStat, int(result))
-                row.save()
-                if stat == stat_list[-1]:
-                    for statistic in rate_stats:
-                        frate = getattr(row, 'f' + statistic) or 0
-                        setattr(row, 'f' + statistic, (frate + row.fPA)/2)
-                        row.save()
-        for statistic in rate_stats:
-            max = qs.aggregate(Max('f' + statistic))['f' + statistic + '__max']
-            control = 100/max if max else 0
-            for row in qs:
-                result = getattr(row, 'f' + statistic) or 0 * control
-                setattr(row, 'f' + statistic, int(result))
-                row.save()
+        aggregated_stats = qs.annotate(
+            weighted_AVG=F('AVG') * F('PA'),
+            weighted_OBP=F('OBP') * F('PA'),
+            weighted_SLG=F('SLG') * F('PA'),
+            weighted_OPS=F('OPS') * F('PA'),
+        ).aggregate(
+            Max('G'),
+            Max('PA'),
+            Max('HR'),
+            Max('R'),
+            Max('RBI'),
+            Max('BB'),
+            Max('IBB'),
+            Max('SO'),
+            Max('HBP'),
+            Max('SF'),
+            Max('SH'),
+            Max('GDP'),
+            Max('SB'),
+            Max('CS'),
+            Max('weighted_AVG'),
+            Max('weighted_OBP'),
+            Max('weighted_SLG'),
+            Max('weighted_OPS'),
+            Min('G'),
+            Min('PA'),
+            Min('HR'),
+            Min('R'),
+            Min('RBI'),
+            Min('BB'),
+            Min('IBB'),
+            Min('SO'),
+            Min('HBP'),
+            Min('SF'),
+            Min('SH'),
+            Min('GDP'),
+            Min('SB'),
+            Min('CS'),
+            Min('weighted_AVG'),
+            Min('weighted_OBP'),
+            Min('weighted_SLG'),
+            Min('weighted_OPS')
+        )
+        for row in qs:
+            for stat in stat_list:
+                f_stat = "f" + stat
+                stat_val = getattr(row, stat) * getattr(row, 'PA') if stat in rate_stats else getattr(row, stat)
+                max_stat = aggregated_stats[f'weighted_{stat}__max'] if stat in rate_stats else aggregated_stats[f'{stat}__max']
+                min_stat = aggregated_stats[f'weighted_{stat}__min'] if stat in rate_stats else aggregated_stats[f'{stat}__min']
+                if stat in reverse_list:
+                    result = (max_stat - stat_val)/(max_stat - min_stat)*100
+                else:
+                    result = (stat_val - min_stat)/(max_stat - min_stat)*100
+                setattr(row, f_stat, int(result))
+            row.save()

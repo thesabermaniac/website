@@ -15,35 +15,95 @@ class Command(BaseCommand):
         stat_list = ['W', 'L', 'ERA', 'WHIP', 'G', 'GS', 'CG', 'ShO', 'SV', 'HLD', 'BS',
                      'IP', 'TBF', 'H', 'R', 'ER', 'HR', 'BB', 'IBB', 'HBP', 'WP', 'SO', 'SVH', 'K_BB']
         reverse_list = ['L', 'ERA', 'WHIP', 'BS', 'H', 'R', 'ER', 'HR', 'BB', 'IBB', 'HBP', 'WP']
-        qs = PitchingStatistics.objects.filter(year=options['year'], is_projection=options['is_proj'], projection_system=options['proj_sys'])
         rate_stats = ['ERA', 'WHIP', 'K_BB']
-        for stat in stat_list:
-            fStat = "f" + stat
-            max = qs.aggregate(Max(stat))[stat + "__max"] or 0
-            min_stat = qs.aggregate(Min(stat))[stat + "__min"] or 0
-            control = 100/max if max != 0 else 0
-            if stat in reverse_list:
-                control = 100/(min_stat - max) if max != 0 and min_stat != 0 else 0
-            for row in qs:
-                if getattr(row, stat):
-                    result = (float(getattr(row, stat)) * float(control)) + 100 if stat in reverse_list else float(getattr(row, stat)) * float(control)
+        qs = PitchingStatistics.objects.filter(year=options['year'], is_projection=options['is_proj'], projection_system=options['proj_sys'], IP__gte=10).annotate(
+            weighted_ERA=F('ERA') * F('IP'),
+            weighted_WHIP=F('WHIP') * F('IP'),
+            weighted_K_BB=F('K_BB') * F('IP')
+        )
+        aggregated_stats = qs.aggregate(
+            Max('W'),
+            Max('L'),
+            Max('G'),
+            Max('GS'),
+            Max('CG'),
+            Max('ShO'),
+            Max('SV'),
+            Max('HLD'),
+            Max('BS'),
+            Max('IP'),
+            Max('TBF'),
+            Max('H'),
+            Max('R'),
+            Max('ER'),
+            Max('HR'),
+            Max('BB'),
+            Max('IBB'),
+            Max('HBP'),
+            Max('WP'),
+            Max('SO'),
+            Max('SVH'),
+            Max('ERA'),
+            Max('WHIP'),
+            Max('K_BB'),
+            Max('weighted_ERA'),
+            Max('weighted_WHIP'),
+            Max('weighted_K_BB'),
+            Min('W'),
+            Min('L'),
+            Min('G'),
+            Min('GS'),
+            Min('CG'),
+            Min('ShO'),
+            Min('SV'),
+            Min('HLD'),
+            Min('BS'),
+            Min('IP'),
+            Min('TBF'),
+            Min('H'),
+            Min('R'),
+            Min('ER'),
+            Min('HR'),
+            Min('BB'),
+            Min('IBB'),
+            Min('HBP'),
+            Min('WP'),
+            Min('SO'),
+            Min('SVH'),
+            Min('ERA'),
+            Min('WHIP'),
+            Min('K_BB'),
+            Min('weighted_ERA'),
+            Min('weighted_WHIP'),
+            Min('weighted_K_BB')
+        )
+        qs = qs.annotate(
+            weighted_scaled_ERA=((aggregated_stats['ERA__max'] - F('ERA'))/(aggregated_stats['ERA__max']-aggregated_stats['ERA__min'])*100) * F('IP'),
+            weighted_scaled_WHIP=((aggregated_stats['WHIP__max'] - F('WHIP'))/(aggregated_stats['WHIP__max']-aggregated_stats['WHIP__min'])*100) * F('IP'),
+            weighted_scaled_K_BB=((F('K_BB') - aggregated_stats['K_BB__min'])/(aggregated_stats['ERA__max']-aggregated_stats['ERA__min'])*100) * F('IP'),
+        )
+        scaled_aggregates = qs.aggregate(
+            Max('weighted_scaled_ERA'),
+            Max('weighted_scaled_WHIP'),
+            Max('weighted_scaled_K_BB'),
+            Min('weighted_scaled_ERA'),
+            Min('weighted_scaled_WHIP'),
+            Min('weighted_scaled_K_BB'),
+        )
+        for row in qs:
+            for stat in stat_list:
+                f_stat = 'f' + stat
+                stat_val = getattr(row, stat)
+                max_stat = aggregated_stats[f'{stat}__max']
+                min_stat = aggregated_stats[f'{stat}__min']
+                if max_stat == 0:
+                    continue
+                if stat in reverse_list:
+                    result = (max_stat - stat_val)/(max_stat - min_stat)*100
                 else:
-                    result = 0
-                setattr(row, fStat, int(result))
-                row.save()
-                if stat == stat_list[-1]:
-                    for statistic in rate_stats:
-                        frate = getattr(row, "f" + statistic)
-                        setattr(row, "f" + statistic, (frate + row.fIP)/2)
-                        fTotal = 0
-                        for score in stat_list:
-                            fTotal += getattr(row, "f" + score)
-                        row.fTotal = int(fTotal)/len(stat_list)
-                        row.save()
-        for statistic in rate_stats:
-            max = qs.aggregate(Max("f" + statistic))['f' + statistic + '__max'] or 0
-            control = 100/max if max !=0 else 0
-            for row in qs:
-                result = getattr(row, 'f' + statistic) * control
-                setattr(row, 'f' + statistic, int(result))
-                row.save()
+                    result = (stat_val - min_stat)/(max_stat - min_stat)*100
+                if stat in rate_stats:
+                    weighted_stat = result * getattr(row, 'IP')
+                    result = (weighted_stat - scaled_aggregates[f'weighted_scaled_{stat}__min'])/(scaled_aggregates[f'weighted_scaled_{stat}__max'] - scaled_aggregates[f'weighted_scaled_{stat}__min']) * 100
+                setattr(row, f_stat, int(result))
+            row.save()
