@@ -65,6 +65,8 @@ class Command(BaseCommand):
                 stat_val = getattr(row, stat) * getattr(row, 'PA') if stat in rate_stats else getattr(row, stat)
                 max_stat = aggregated_stats[f'weighted_{stat}__max'] if stat in rate_stats else aggregated_stats[f'{stat}__max']
                 min_stat = aggregated_stats[f'weighted_{stat}__min'] if stat in rate_stats else aggregated_stats[f'{stat}__min']
+                if min_stat - max_stat == 0:
+                    continue
                 if stat in reverse_list:
                     result = (max_stat - stat_val)/(max_stat - min_stat)*100
                 else:
