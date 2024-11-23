@@ -67,11 +67,23 @@
                     $(formId + " #name1").val(ui.item.label);
                     $(formId + " #fangraphs_id1").val(ui.item.value);
 
-                    let score = hittingFScores[ui.item.value];
-                    if(score == null){
-                        score = pitchingFScores[ui.item.value];
+                    let score1 = (hittingFScores[ui.item.value] && hittingFScores[ui.item.value][2024]) ? hittingFScores[ui.item.value][2024] : null;
+                    if(score1 == null){
+                        score1 = (pitchingFScores[ui.item.value] && pitchingFScores[ui.item.value][2024]) ? pitchingFScores[ui.item.value][2024] : 0;
                     }
-                    $(formId + " #fscore1").html(score);
+
+                    let score2 = (hittingFScores[ui.item.value] && hittingFScores[ui.item.value][2025]) ? hittingFScores[ui.item.value][2025] : null;
+                    if(score2 == null){
+                        score2 = (pitchingFScores[ui.item.value] && pitchingFScores[ui.item.value][2025]) ? pitchingFScores[ui.item.value][2025] : 0;
+                    }
+
+                    let score3 = (hittingFScores[ui.item.value] && hittingFScores[ui.item.value][2026]) ? hittingFScores[ui.item.value][2026] : null;
+                    if(score3 == null){
+                        score3 = (pitchingFScores[ui.item.value] && pitchingFScores[ui.item.value][2026]) ? pitchingFScores[ui.item.value][2026] : 0;
+                    }
+                    let score = ((score1 * 5) + (score2 * 3) + score3) / 9
+
+                    $(formId + " #fscore1").html(Math.round(score));
 
                     if(ogValue === "") {
                         addField(next, availableTags, ui, formId);
@@ -112,11 +124,23 @@
                         $(formId + " #name" + next).val(ui.item.label);
                         $(formId + " #fangraphs_id" + next).val(ui.item.value);
 
-                        let score = hittingFScores[ui.item.value];
-                        if(score == null){
-                            score = pitchingFScores[ui.item.value];
+                        let score1 = (hittingFScores[ui.item.value] && hittingFScores[ui.item.value][2024]) ? hittingFScores[ui.item.value][2024] : null;
+                        if(score1 == null){
+                            score1 = (pitchingFScores[ui.item.value] && pitchingFScores[ui.item.value][2024]) ? pitchingFScores[ui.item.value][2024] : 0;
                         }
-                        $(formId + " #fscore" + next).html(score);
+
+                        let score2 = (hittingFScores[ui.item.value] && hittingFScores[ui.item.value][2025]) ? hittingFScores[ui.item.value][2025] : null;
+                        if(score2 == null){
+                            score2 = (pitchingFScores[ui.item.value] && pitchingFScores[ui.item.value][2025]) ? pitchingFScores[ui.item.value][2025] : 0;
+                        }
+
+                        let score3 = (hittingFScores[ui.item.value] && hittingFScores[ui.item.value][2026]) ? hittingFScores[ui.item.value][2026] : null;
+                        if(score3 == null){
+                            score3 = (pitchingFScores[ui.item.value] && pitchingFScores[ui.item.value][2026]) ? pitchingFScores[ui.item.value][2026] : 0;
+                        }
+                        let score = ((score1 * 5) + (score2 * 3) + score3) / 9
+
+                        $(formId + " #fscore" + next).html(Math.round(score));
 
                         if(ogValue === "") {
                             addField(next, availableTags, ui, formId);

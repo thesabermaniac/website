@@ -160,9 +160,9 @@
                     <tr>
                         <td></td>
                         {% for field in included_field_names %}
-                            {% if field|upper == "FTOTAL" %}
-                                <td>{{ stat|fTotal:context }}</td>
-                            {% elif bigboard and stat|get_class_name == 'PitchingStatistics' and field in pitching_stats or stat|get_class_name == 'HittingStatistics' and field in hitting_stats %}
+                            <td>{{ stat|get_item:field|default:"-" }}</td>
+                            {% comment %}
+                            {% if bigboard and stat|get_class_name == 'PitchingStatistics' and field in pitching_stats or stat|get_class_name == 'HittingStatistics' and field in hitting_stats %}
                                 <td>{{ stat|get_stat:field }}</td>
                             {% elif not bigboard %}
                                 {% if field == 'AVG' or field == 'SLG' or field == 'OBP' or field == 'OPS' %}
@@ -181,6 +181,7 @@
                             {% else %}
                                 <td>-</td>
                             {% endif %}
+                            {% endcomment %}
                         {% endfor %}
                     </tr>
                 {% endfor %}
