@@ -8,19 +8,18 @@
 {% endblock %}
 
 {% block content %}
-    <div class="form-container" style="text-align: center">
+    <div class="form-container">
         {% for team in teams %}
             <div class="team-container">
-                <h4 class="team-title">{{ team.name }}</h4>
                 <form action="" method="post" id="{{ team.form_id }}" class="trade-form">
+                    <h4 class="team-title">{{ team.name }}</h4>
                     {% csrf_token %}
                     <div class="table-container">
                         <!-- Table Headers -->
                         <div class="table-header">
                             <div class="table-cell">Player</div>
-                            <div class="table-cell">Win Now Score</div>
-                            <div class="table-cell">Rebuilding Score</div>
-                            <div class="delete-cell"></div>
+                            <div class="table-cell">Win Now</div>
+                            <div class="table-cell">Rebuilding</div>
                         </div>
 
                         <!-- Player Rows (Dynamic) -->
@@ -33,17 +32,43 @@
                                 <label class="fscore_label" id="fscore1"></label>
                             </div>
                             <div class="table-cell">
-                                <label class="fscore_label" id="rebuilding_score1"></label>
+                                <label class="rebuilding_fscore_label" id="rebuilding_score1"></label>
                             </div>
                         </div>
 
                         <!-- Add more rows dynamically (the template will loop for more players) -->
-
                     </div>
-                    <input type="submit" value="Send" class="submit-button">
+                    <div class="button-wrapper">
+                        <button type="button" id="clearButton" class="clear-button">Clear</button> <!-- New Clear Button -->
+                    </div>
                 </form>
             </div>
         {% endfor %}
+    </div>
+
+    <div class="button-wrapper">
+        <button type="button" id="submitButton" class="submit-button">Submit</button>
+    </div>
+
+    <!-- Comparison Table (Hidden initially) -->
+    <div class="results-container" style="display: none;">
+        <div class="results-table">
+            <div id="comparisonTableContainer" >
+                <h3>Results</h3>
+                <table id="comparisonTable" class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Team Name</th>
+                            <th>Win Now Total</th>
+                            <th>Rebuilding Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Rows will be dynamically generated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 {% endblock %}
 
@@ -62,5 +87,3 @@
     <link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/themes/ui-lightness/jquery-ui.css" rel="stylesheet" type="text/css" />
     <link href="{% static 'css/trade-analyzer.css' %}" rel="stylesheet" type="text/css"/>
 {% endblock %}
-
-

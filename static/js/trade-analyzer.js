@@ -1,62 +1,71 @@
 // Preloaded data from the context
-// Use variables defined in the HTML context
-console.log(document.getElementById('fScoresData').textContent)
-console.log(JSON.parse(document.getElementById('fScoresData').textContent))
-let fScores = JSON.parse(document.getElementById('fScoresData').textContent);
-let availableTags = JSON.parse(document.getElementById('availableTagsData').textContent);
+const fScores = JSON.parse(document.getElementById('fScoresData').textContent);
+const availableTags = JSON.parse(document.getElementById('availableTagsData').textContent);
 
+// Common function to calculate fScore
+function calculateScore(playerValue) {
+    const weights = [5, 3, 1];
+    const rebuildingWeights = [1, 3, 5];
+    const scores = [2024, 2025, 2026].map(year => fScores[playerValue]?.[year]);
 
-function setAutoComplete(formId) {
-    // Attach autocomplete to the first field in the form
-    $(formId + " #name1").autocomplete({
-        source: availableTags,
-        focus: function (event, ui) {
-            event.preventDefault();
-            $(formId + " #name1").val(ui.item.label);
-        },
-        select: function (event, ui) {
-            event.preventDefault();
-            $(formId + " #name1").val(ui.item.label);
-            $(formId + " #fangraphs_id1").val(ui.item.value);
+    let totalWeight = 0, weightedSum = 0, totalRebuildingWeight = 0, rebuildingWeightedSum = 0;
 
-            // Calculate fScore
-            let weights = [5, 3, 1]; // Corresponding weights for the years 2024, 2025, and 2026
-            let scores = [
-                fScores[ui.item.value]?.[2024],
-                fScores[ui.item.value]?.[2025],
-                fScores[ui.item.value]?.[2026]
-            ];
-
-            // Calculate weighted score, ignoring missing values
-            let totalWeight = 0;
-            let weightedSum = 0;
-
-            scores.forEach((score, index) => {
-                if (score !== undefined) { // Only include if the score exists
-                    weightedSum += score * weights[index];
-                    totalWeight += weights[index];
-                }
-            });
-
-            let score = totalWeight > 0 ? (weightedSum / totalWeight) : 0; // Avoid division by zero
-            $(formId + " #fscore1").html(Math.round(score));
-
-
-            // Add new input field dynamically
-            addField(2, availableTags, formId);
+    scores.forEach((score, index) => {
+        if (score !== undefined) {
+            weightedSum += score * weights[index];
+            totalWeight += weights[index];
+            rebuildingWeightedSum += score * rebuildingWeights[index];
+            totalRebuildingWeight += rebuildingWeights[index];
         }
     });
 
-    // Attach submit handler
-    $(formId).on("submit", function (e) {
-        e.preventDefault(); // Prevent normal form submission
-        calculateTotalScore(formId);
+    return {
+        score: totalWeight ? Math.round(weightedSum / totalWeight) : 0,
+        rebuildingScore: totalRebuildingWeight ? Math.round(rebuildingWeightedSum / totalRebuildingWeight) : 0
+    };
+}
+
+// Function to initialize autocomplete and calculate scores
+function initializeAutocomplete(inputId, formId, next) {
+    $(inputId).autocomplete({
+        source: availableTags,
+        focus: function (event, ui) {
+            event.preventDefault();
+            $(inputId).val(ui.item.label);
+        },
+        select: function (event, ui) {
+            event.preventDefault();
+            $(inputId).val(ui.item.label);
+            $(`${formId} #fangraphs_id${next}`).val(ui.item.value);
+
+            // Calculate and display the scores
+            const { score, rebuildingScore } = calculateScore(ui.item.value);
+            $(`${formId} #fscore${next}`).text(score);
+            $(`${formId} #rebuilding_score${next}`).text(rebuildingScore);
+
+            // Add next field dynamically
+            addField(next + 1, formId);
+        }
     });
 }
 
-function addField(next, availableTags, formId) {
-    // Create new field HTML
-    let newField = `
+// Set autocomplete for the form
+function setAutoComplete(formId) {
+    initializeAutocomplete(`${formId} #name1`, formId, 1);
+
+    // Handle the clear button for this form
+    $(`${formId} #clearButton`).on('click', function () {
+        const form = $(this).closest('form');
+        form.find(".player-name").val(""); // Clear player input fields
+        form.find(".fscore_label, .rebuilding_fscore_label").text(""); // Clear scores
+        form.find(".player-row").not(':first').remove(); // Remove extra rows
+        setAutoComplete(formId); // Reinitialize autocomplete
+    });
+}
+
+// Add new field dynamically
+function addField(next, formId) {
+    const newField = `
         <div id="player${next}" class="player-row">
             <div class="table-cell">
                 <input type="hidden" name="fangraphs_id${next}" id="fangraphs_id${next}">
@@ -66,74 +75,70 @@ function addField(next, availableTags, formId) {
                 <label class="fscore_label" id="fscore${next}"></label>
             </div>
             <div class="table-cell">
-                <label class="fscore_label" id="rebuilding_score${next}"></label>
+                <label class="rebuilding_fscore_label" id="rebuilding_score${next}"></label>
             </div>
-            <!-- Delete button outside the table cells but still aligned with the row -->
             <button type="button" class="delete-button" onclick="deleteField(${next}, '${formId}')">
                 <i class="fas fa-trash-alt"></i>
             </button>
         </div>`;
-    $(formId + " #player" + (next - 1)).after(newField);
 
-    // Attach autocomplete to the new field
-    $(formId + " #name" + next).autocomplete({
-        source: availableTags,
-        focus: function (event, ui) {
-            event.preventDefault();
-            $(formId + " #name" + next).val(ui.item.label);
-        },
-        select: function (event, ui) {
-            event.preventDefault();
-            $(formId + " #name" + next).val(ui.item.label);
-            $(formId + " #fangraphs_id" + next).val(ui.item.value);
-
-            // Calculate fScore
-            let weights = [5, 3, 1]; // Corresponding weights for the years 2024, 2025, and 2026
-            let scores = [
-                fScores[ui.item.value]?.[2024],
-                fScores[ui.item.value]?.[2025],
-                fScores[ui.item.value]?.[2026]
-            ];
-
-            // Calculate weighted score, ignoring missing values
-            let totalWeight = 0;
-            let weightedSum = 0;
-
-            scores.forEach((score, index) => {
-                if (score !== undefined) { // Only include if the score exists
-                    weightedSum += score * weights[index];
-                    totalWeight += weights[index];
-                }
-            });
-
-            let score = totalWeight > 0 ? (weightedSum / totalWeight) : 0; // Avoid division by zero
-            $(formId + " #fscore" + next).html(Math.round(score));
-
-            // Add the next field dynamically
-            addField(next + 1, availableTags, formId);
-        }
-    });
+    $(`${formId} #player${next - 1}`).after(newField);
+    initializeAutocomplete(`${formId} #name${next}`, formId, next);
 }
 
-
-
-
+// Delete player field dynamically
 function deleteField(id, formId) {
-    $(formId + " #player" + id).remove();
+    $(`${formId} #player${id}`).remove();
 }
 
-function calculateTotalScore(formId) {
-    let total = 0;
-    $(formId + " .fscore_label").each(function () {
-        let score = parseInt($(this).text());
-        if (!isNaN(score)) {
-            total += score;
-        }
+// Calculate total scores for a form
+function calculateTotalScores(formId) {
+    let winNowTotal = 0, rebuildingTotal = 0;
+
+    $(`${formId} .fscore_label`).each(function () {
+        const score = parseInt($(this).text());
+        if (!isNaN(score)) winNowTotal += score;
     });
-    $(formId + " .total_score").html(total);
+
+    $(`${formId} .rebuilding_fscore_label`).each(function () {
+        const rebuildingScore = parseInt($(this).text());
+        if (!isNaN(rebuildingScore)) rebuildingTotal += rebuildingScore;
+    });
+
+    return { winNowTotal, rebuildingTotal };
 }
+
+// Generate comparison table
+function generateComparisonTable(results) {
+    const tableBody = $("#comparisonTable tbody").empty(); // Clear existing rows
+
+    results.forEach(result => {
+        const row = `<tr>
+                        <td>${result.teamName}</td>
+                        <td>${result.winNowTotal}</td>
+                        <td>${result.rebuildingTotal}</td>
+                    </tr>`;
+        tableBody.append(row);
+    });
+
+    $(".results-container").show();
+}
+
+// Submit button handler
+$("#submitButton").on("click", function () {
+    const results = $(".trade-form").map(function () {
+        const formId = "#" + $(this).attr("id");
+        const teamName = $(formId).find(".team-title").text();
+        const { winNowTotal, rebuildingTotal } = calculateTotalScores(formId);
+
+        return { teamName, winNowTotal, rebuildingTotal };
+    }).get();
+
+    generateComparisonTable(results);
+});
 
 $(document).ready(function () {
+    // Initialize autocomplete for the forms
     setAutoComplete("#trade_form1");
     setAutoComplete("#trade_form2");
 });

@@ -1,24 +1,34 @@
-/* Form container that holds all teams */
+/* General layout for the form container */
 .form-container {
     display: flex;
-    flex-wrap: wrap; /* Allow forms to wrap into new lines */
-    justify-content: center; /* Center forms horizontally */
-    gap: 20px; /* Add space between forms */
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
     padding: 10px;
-    width: 100%; /* Full width */
+    width: 100%;
 }
 
 /* Team container (each form) */
-.team-container {
+.team-container,
+.results-table{
     display: flex;
     flex-direction: column;
     align-items: center;
-    width: calc(33.33% - 20px); /* Each form will take up 33.33% of the container on large screens */
-    max-width: 600px; /* Max width to avoid too wide of forms */
-    margin-bottom: 20px;
-    border: 1px solid #ddd; /* Border for table appearance */
     padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #ddd;
     border-radius: 8px;
+    max-width: 600px;
+    width: calc(33.33% - 20px); /* Default for large screens */
+    text-align: center;
+}
+
+.results-container{
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    margin-bottom: 20px;
 }
 
 /* Team title */
@@ -27,14 +37,14 @@
     margin-bottom: 15px;
 }
 
-/* Table-like container */
+/* Table container */
 .table-container {
     display: flex;
     flex-direction: column;
     width: 100%;
 }
 
-/* Table header (for column names) */
+/* Table header and table cells */
 .table-header {
     display: flex;
     font-weight: bold;
@@ -43,56 +53,45 @@
     padding: 10px;
 }
 
-/* Individual table cell */
-.table-cell {
+.table-cell,
+.delete-column {
     flex: 1;
     padding: 8px;
     text-align: center;
-}
-
-/* Delete button container */
-.delete-column {
-    flex: 0;
-    text-align: center;
-    padding: 8px;
+    white-space: nowrap;
 }
 
 /* Player row */
 .player-row {
     display: flex;
     align-items: center;
-    border-bottom: 1px solid #ddd;
     padding: 10px;
     position: relative;
-    width: 100%; /* Ensure the row takes up the full width */
+    width: 100%;
+    border-bottom: 1px solid #ddd;
 }
 
-/* Player name input styling */
-.player-name {
+/* Player input and score label */
+.player-name,
+.fscore_label,
+.rebuilding_fscore_label{
     width: 100%;
     padding: 8px;
+    text-align: center;
     font-size: 14px;
     box-sizing: border-box;
-    text-align: center;
 }
 
-/* Score label next to player name */
-.fscore_label {
-    width: 100%;
-    text-align: center;
-    font-size: 14px;
+.trade-form {
+    margin-right: 35px;
 }
 
-.trade-form{
-    margin-right: 35px
-}
-
-/* Delete button container (out of the table cells) */
+/* Delete button outside of the table cells */
 .delete-button {
-    position: absolute; /* Position the delete button absolutely */
-    right: -35px; /* Position it 10px from the right edge of the player row */
-    top: 50%; /* Vertically center it in the player row */
-    transform: translateY(-50%); /* Ensure it is perfectly centered */
+    position: absolute;
+    right: -35px;
+    top: 50%;
+    transform: translateY(-50%);
     width: 30px;
     height: 30px;
     display: flex;
@@ -112,45 +111,71 @@
     color: #c0392b;
 }
 
-/* Submit button styling */
+/* Clear and submit button styles */
+.clear-button,
 .submit-button {
     margin-top: 15px;
     padding: 8px 16px;
     font-size: 14px;
     cursor: pointer;
     align-self: center;
+    background-color: #f2f2f2;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin-left: 10px;
 }
 
-/* Media query for smaller screens (below 768px) */
+.clear-button:hover {
+    background-color: #e0e0e0;
+}
+
+.comparison-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.comparison-table th, .comparison-table td {
+    padding: 10px;
+    border: 1px solid #ddd;
+}
+
+.comparison-table th {
+    background-color: #f4f4f4;
+}
+
+#comparisonTableContainer {
+    margin-top: 20px;
+}
+
+/* Wrapper to center buttons */
+.button-wrapper {
+    display: flex;
+    justify-content: center;
+    gap: 10px; /* Space between buttons */
+    width: 100%; /* Ensure it takes the full width */
+    margin-top: 15px;
+}
+
+/* Responsive styles */
 @media (max-width: 768px) {
     .form-container {
-        flex-direction: column; /* Stack the forms vertically */
+        flex-direction: column;
         align-items: center;
     }
 
     .team-container {
-        width: 100%; /* Forms will take the full width of the screen */
+        width: 100%;
     }
 
-    .table-header {
-        font-size: 12px;
-    }
-
+    .table-header,
     .player-name {
         font-size: 12px;
     }
 }
 
-/* Media query for larger screens (above 768px) */
 @media (min-width: 769px) {
     .team-container {
-        width: calc(50% - 20px); /* Forms will be displayed side by side, each takes up 50% */
-    }
-}
-
-/* Media query for extra large screens (above 1024px) */
-@media (min-width: 1024px) {
-    .team-container {
-        width: calc(33.33% - 20px); /* On wider screens, forms will take up 33% width */
+        width: calc(50% - 20px); /* Two forms side by side */
     }
 }
