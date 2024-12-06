@@ -1,6 +1,8 @@
 from django.views.generic import *
 from stats.models import HittingStatistics, Player, PitchingStatistics
 from django.conf import settings
+from django.db.models import Q
+from collections import defaultdict
 
 from itertools import chain
 
@@ -40,18 +42,32 @@ class BigBoardView(ListView):
         stat_list.extend(hitting_stats)
         stat_list.extend(pitching_stats)
         stat_list.append('fTotal')
-        for row in self.hitting_qs:
-            total = 0
-            for stat in hitting_stats:
-                total += getattr(row, stat)
-            average = total/len(hitting_stats) if len(hitting_stats) > 0 else 1
-            context['fTotal_' + str(row)] = int(average)
-        for row in self.pitching_qs:
-            total = 0
-            for stat in pitching_stats:
-                total += getattr(row, stat)
-            average = total/len(pitching_stats) if len(pitching_stats) > 0 else 1
-            context['fTotal_' + str(row)] = int(average)
+        objects = context['object_list']
+        players = {o.player for o in objects}
+        final_stats = []
+
+        player_statistics = defaultdict(list)
+        for obj in objects:
+            player_statistics[obj.player].append(obj)
+
+        for p in players:
+            stats = player_statistics[p]
+            player_stats = {'player': str(p)}
+            hitting_total = 0
+            pitching_total = 0
+            for stat in stats:
+                if type(stat) == HittingStatistics:
+                    hitting_statistics = {s: getattr(stat, s) for s in hitting_stats}
+                    player_stats.update(hitting_statistics)
+                    hitting_total = sum(hitting_statistics.values())/len(hitting_statistics.values())
+                elif type(stat) == PitchingStatistics:
+                    pitching_statistics = {s: getattr(stat, s) for s in pitching_stats}
+                    player_stats.update(pitching_statistics)
+                    pitching_total = sum(pitching_statistics.values())/len(pitching_statistics.values())
+                player_stats['year'] = stat.year
+            player_stats['fTotal'] = round(hitting_total + pitching_total)
+            final_stats.append(player_stats)
+        context['object_list'] = final_stats
         context['hitting_fields'] = self.hitting_qs.first().get_field_names() if self.hitting_qs else ''
         context['pitching_fields'] = self.pitching_qs.first().get_field_names() if self.pitching_qs else ''
         context['year_list'] = list(set(HittingStatistics.objects.order_by().values_list('year', flat=True).distinct()) & set(PitchingStatistics.objects.order_by().values_list('year', flat=True).distinct()))
@@ -75,7 +91,7 @@ class StatsListView(ListView):
         stat_list.extend(self.request.GET.getlist('include'))
         for stat in self.request.GET.getlist('include'):
             stat_list.append("f" + stat)
-        stat_list.append("fTotal")
+        # stat_list.append("fTotal")
 
         if self.request.GET.get('proj'):
             self.model = self.model.filter(is_projection=self.request.GET.get('proj'), projection_system=self.request.GET.get('proj_sys'))
@@ -90,15 +106,20 @@ class StatsListView(ListView):
             self.model = self.model.filter(IP__gte=self.request.GET.get('min_ip'))
 
         context['field_names'] = self.model.first().get_field_names() if self.model else ''
-        context['included_field_names'] = stat_list if self.request.GET.get('include') else self.model.first().get_field_names()
+        included_fields = stat_list if self.request.GET.get('include') else self.model.first().get_field_names()
+        context['included_field_names'] = included_fields + ['fTotal']
         context['object_list'] = self.model
         context['default_year'] = settings.DEFAULT_YEAR
+        final_stats = []
         for row in self.model:
-            total = 0
-            for stat in self.request.GET.getlist('include'):
-                total += getattr(row, "f" + stat)
-            average = total/len(self.request.GET.getlist('include'))
-            context['fTotal_' + str(row)] = int(average)
+            player_stats = {}
+            for stat in included_fields:
+                player_stats[stat] = getattr(row, stat)
+            fstats = [v for k, v in player_stats.items() if k.startswith('f')]
+            average = sum(fstats)/len(fstats)
+            player_stats['fTotal'] = int(average)
+            final_stats.append(player_stats)
+        context['object_list'] = final_stats
         context['context'] = context
         return context
 
@@ -107,9 +128,52 @@ class TradeAnalyzer(TemplateView):
     template_name = 'trade-analyzer.html'
 
     def get_context_data(self, **kwargs):
-        context = super(TradeAnalyzer, self).get_context_data(**kwargs)
-        context['players'] = Player.objects.all()
-        context['hitting_fScores'] = {hitter.player.fangraphs_id: round((hitter.fOPS + hitter.fAVG + hitter.fR + hitter.fRBI + hitter.fHR + hitter.fSB)/6) for hitter in HittingStatistics.objects.filter(year=2022)}
-        context['pitching_fScores'] = {pitcher.player.fangraphs_id: round((pitcher.fERA + pitcher.fWHIP + pitcher.fW + pitcher.fSO + pitcher.fSVH + pitcher.fK_BB)/6) for pitcher in PitchingStatistics.objects.filter(year=2022)}
+        context = super().get_context_data(**kwargs)
+
+        # Fetch data for hitters and pitchers based on the query
+        query = Q(year=2025, projection_system='steamer') | Q(year=2026, projection_system='zips')
+        hitters = HittingStatistics.objects.filter(query)
+        pitchers = PitchingStatistics.objects.filter(query)
+        all_stats = list(chain(hitters, pitchers))
+        hitting_stats = ['fOPS', 'fAVG', 'fR', 'fRBI', 'fHR', 'fSB']
+        pitching_stats = ['fERA', 'fWHIP', 'fW', 'fSO', 'fSVH', 'fK_BB']
+        # players = {s.player for s in all_stats}
+
+        player_stats = defaultdict(lambda: defaultdict(list))
+        for stat in all_stats:
+            player_stats[stat.player][stat.year].append(stat)
+
+        player_id_map = []
+        fScores = defaultdict(dict)
+        for player, years in player_stats.items():
+            player_id_map.append({'name': player.name, 'fangraphs_id': player.fangraphs_id})
+            for year, stats in years.items():
+                hitting_total = 0
+                pitching_total = 0
+                for stat in stats:
+                    if type(stat) == HittingStatistics:
+                        hitting_total = self.calculate_fScores(stat, hitting_stats)
+                    elif type(stat) == PitchingStatistics:
+                        pitching_total = self.calculate_fScores(stat, pitching_stats)
+                fscore = hitting_total + pitching_total
+                fScores[player.fangraphs_id][year] = fscore
+        context['fScores'] = dict(fScores)
+        context['players'] = player_id_map
+
+        # Teams for the template
+        context['teams'] = [
+            {'name': 'Team A', 'form_id': 'trade_form1'},
+            {'name': 'Team B', 'form_id': 'trade_form2'},
+        ]
+
         return context
+
+    def calculate_fScores(self, stat, attributes):
+        """
+        Calculate fScores for players based on specified attributes.
+        """
+        return round(
+            sum(getattr(stat, attr, 0) for attr in attributes) / len(attributes)
+        )
+
 

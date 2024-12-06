@@ -47,3 +47,8 @@ def get_stat(obj, value):
 @register.filter
 def get_fstat(obj, value):
     return getattr(obj, "f" + value)
+
+
+@register.filter
+def get_item(dictionary, item):
+    return dictionary.get(item, None)

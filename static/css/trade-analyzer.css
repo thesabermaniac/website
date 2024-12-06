@@ -1,0 +1,181 @@
+/* General layout for the form container */
+.form-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+    padding: 10px;
+    width: 100%;
+}
+
+/* Team container (each form) */
+.team-container,
+.results-table{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    max-width: 600px;
+    width: calc(33.33% - 20px); /* Default for large screens */
+    text-align: center;
+}
+
+.results-container{
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    margin-bottom: 20px;
+}
+
+/* Team title */
+.team-title {
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+/* Table container */
+.table-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+/* Table header and table cells */
+.table-header {
+    display: flex;
+    font-weight: bold;
+    background-color: #f4f4f4;
+    border-bottom: 1px solid #ddd;
+    padding: 10px;
+}
+
+.table-cell,
+.delete-column {
+    flex: 1;
+    padding: 8px;
+    text-align: center;
+    white-space: nowrap;
+}
+
+/* Player row */
+.player-row {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    position: relative;
+    width: 100%;
+    border-bottom: 1px solid #ddd;
+}
+
+/* Player input and score label */
+.player-name,
+.fscore_label,
+.rebuilding_fscore_label{
+    width: 100%;
+    padding: 8px;
+    text-align: center;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+.trade-form {
+    margin-right: 35px;
+}
+
+/* Delete button outside of the table cells */
+.delete-button {
+    position: absolute;
+    right: -35px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #e74c3c;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.delete-button i {
+    font-size: 16px;
+}
+
+.delete-button:hover {
+    color: #c0392b;
+}
+
+/* Clear and submit button styles */
+.clear-button,
+.submit-button {
+    margin-top: 15px;
+    padding: 8px 16px;
+    font-size: 14px;
+    cursor: pointer;
+    align-self: center;
+    background-color: #f2f2f2;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin-left: 10px;
+}
+
+.clear-button:hover {
+    background-color: #e0e0e0;
+}
+
+.comparison-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.comparison-table th, .comparison-table td {
+    padding: 10px;
+    border: 1px solid #ddd;
+}
+
+.comparison-table th {
+    background-color: #f4f4f4;
+}
+
+#comparisonTableContainer {
+    margin-top: 20px;
+}
+
+/* Wrapper to center buttons */
+.button-wrapper {
+    display: flex;
+    justify-content: center;
+    gap: 10px; /* Space between buttons */
+    width: 100%; /* Ensure it takes the full width */
+    margin-top: 15px;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+    .form-container {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .team-container {
+        width: 100%;
+    }
+
+    .table-header,
+    .player-name {
+        font-size: 12px;
+    }
+}
+
+@media (min-width: 769px) {
+    .team-container {
+        width: calc(50% - 20px); /* Two forms side by side */
+    }
+}

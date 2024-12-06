@@ -1,135 +1,89 @@
 {% extends 'base.html' %}
-{% load my_tags %}
+{% load static %}
 
 {% block title %}Sabermaniac | Trade Analyzer{% endblock %}
 
-{% block content %}
-    <div style="text-align: center">
-        <div style="width: 30%; display: inline-table; vertical-align: top">
-            <form action="" method="post" id="trade_form1" style="display: inline-block; position: relative">
-                {% csrf_token %}
-                <input type="hidden" name="fangraphs_id" id="fangraphs_id1">
-                <h4>Team A</h4>
-                <div id="player1">
-                    <input type="text" name="name1" required id="name1">
-                    <label class="fscore_label" id="fscore1" style="margin-left: -4px"></label>
-                </div>
-                <input type="submit" value="Send" style="margin-right: 25px">
-                <p id="total_score" style="text-align: center; margin-right: 25px"></p>
-            </form>
-        </div>
+{% block head_extras %}
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+{% endblock %}
 
-        <div style="width: 30%; display: inline-table; vertical-align: top">
-            <form action="" method="post" id="trade_form2" style="display: inline-block; position: relative">
-                {% csrf_token %}
-                <input type="hidden" name="fangraphs_id" id="fangraphs_id1">
-                <h4>Team B</h4>
-                <div id="player1">
-                    <input type="text" name="name1" required id="name1">
-                    <label class="fscore_label" id="fscore1" style="margin-left: -4px"></label>
-                </div>
-                <input type="submit" value="Send" style="margin-right: 25px">
-                <p id="total_score" style="text-align: center; margin-right: 25px"></p>
-            </form>
-        </div>
+{% block content %}
+    <div class="form-container">
+        {% for team in teams %}
+            <div class="team-container">
+                <form action="" method="post" id="{{ team.form_id }}" class="trade-form">
+                    <h4 class="team-title">{{ team.name }}</h4>
+                    {% csrf_token %}
+                    <div class="table-container">
+                        <!-- Table Headers -->
+                        <div class="table-header">
+                            <div class="table-cell">Player</div>
+                            <div class="table-cell">Win Now</div>
+                            <div class="table-cell">Rebuilding</div>
+                        </div>
+
+                        <!-- Player Rows (Dynamic) -->
+                        <div id="player1" class="player-row">
+                            <input type="hidden" name="fangraphs_id1" id="fangraphs_id1">
+                            <div class="table-cell">
+                                <input type="text" name="name1" id="name1" class="player-name" required>
+                            </div>
+                            <div class="table-cell">
+                                <label class="fscore_label" id="fscore1"></label>
+                            </div>
+                            <div class="table-cell">
+                                <label class="rebuilding_fscore_label" id="rebuilding_score1"></label>
+                            </div>
+                        </div>
+
+                        <!-- Add more rows dynamically (the template will loop for more players) -->
+                    </div>
+                    <div class="button-wrapper">
+                        <button type="button" id="clearButton" class="clear-button">Clear</button> <!-- New Clear Button -->
+                    </div>
+                </form>
+            </div>
+        {% endfor %}
     </div>
 
-    <style>
-        .fscore_label{width: 25px}
-    </style>
+    <div class="button-wrapper">
+        <button type="button" id="submitButton" class="submit-button">Submit</button>
+    </div>
+
+    <!-- Comparison Table (Hidden initially) -->
+    <div class="results-container" style="display: none;">
+        <div class="results-table">
+            <div id="comparisonTableContainer" >
+                <h3>Results</h3>
+                <table id="comparisonTable" class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Team Name</th>
+                            <th>Win Now Total</th>
+                            <th>Rebuilding Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Rows will be dynamically generated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 {% endblock %}
 
 {% block extra_js %}
+    {{ fScores|json_script:"fScoresData"}}
+    <script id="availableTagsData" type="application/json">
+        [
+            {% for player in players %}
+                { "label": "{{ player.name|escapejs }}", "value": "{{ player.fangraphs_id }}" }{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ]
+    </script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.js"></script>
+    <script src="{% static 'js/trade-analyzer.js' %}"></script>
     <link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/themes/ui-lightness/jquery-ui.css" rel="stylesheet" type="text/css" />
-
-    <script>
-        let next = 1;
-        let hittingFScores = {{ hitting_fScores|safe }};
-        let pitchingFScores = {{ pitching_fScores|safe }};
-        let availableTags = [
-            {% for player in players %}
-                { label: '{{ player.name }}', value: '{{ player.fangraphs_id }}'},
-            {% endfor %}
-        ];
-
-        function setAutoComplete(formId){
-            let ogValue = "";
-            $(formId + " #name1").autocomplete({
-                source: availableTags,
-                focus: function (event, ui){
-                    event.preventDefault();
-                    $(formId + " #name1").val(ui.item.label);
-                },
-                select: function (event, ui) {
-                    event.preventDefault();
-                    $(formId + " #name1").val(ui.item.label);
-                    $(formId + " #fangraphs_id1").val(ui.item.value);
-
-                    let score = hittingFScores[ui.item.value];
-                    if(score == null){
-                        score = pitchingFScores[ui.item.value];
-                    }
-                    $(formId + " #fscore1").html(score);
-
-                    if(ogValue === "") {
-                        addField(next, availableTags, ui, formId);
-                        ogValue = ui.item.label;
-                    }
-                }
-            });
-
-            $(formId).submit(function (e){
-                e.preventDefault();
-                let total = 0;
-                $(formId + " label").each(function (){
-                    let score = parseInt($(this).text());
-                    if(!isNaN(score)){
-                        total = total + score;
-                    }
-                });
-                $(formId + " #total_score").html(total);
-            })
-        }
-
-        function addField(next, availableTags, y, formId){
-                let ogValue = ""
-                var addTo = formId + " #player" + next;
-                next = next + 1;
-                var newIn = '<input type="hidden" name="fangraphs_id' + next + '" id="fangraphs_id' + next + '"><div id = "player' + next + '"> <input type="text" name="name' + next + '" id="name' + next + '"><label class="fscore_label" id=fscore' + next + '></label>'
-                var newInput = $(newIn);
-                $(addTo).after(newInput);
-
-                $(formId + " #name" + next).autocomplete({
-                    source: availableTags,
-                    focus: function (event, ui){
-                        event.preventDefault();
-                        $(formId + " #name" + next).val(ui.item.label);
-                    },
-                    select: function (event, ui) {
-                        event.preventDefault();
-                        $(formId + " #name" + next).val(ui.item.label);
-                        $(formId + " #fangraphs_id" + next).val(ui.item.value);
-
-                        let score = hittingFScores[ui.item.value];
-                        if(score == null){
-                            score = pitchingFScores[ui.item.value];
-                        }
-                        $(formId + " #fscore" + next).html(score);
-
-                        if(ogValue === "") {
-                            addField(next, availableTags, ui, formId);
-                            ogValue = ui.item.label;
-                        }
-                    }
-
-                })
-        };
-
-        $(function (){
-            setAutoComplete("#trade_form1");
-            setAutoComplete("#trade_form2");
-        });
-    </script>
+    <link href="{% static 'css/trade-analyzer.css' %}" rel="stylesheet" type="text/css"/>
 {% endblock %}
