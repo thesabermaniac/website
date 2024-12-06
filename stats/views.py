@@ -128,32 +128,52 @@ class TradeAnalyzer(TemplateView):
     template_name = 'trade-analyzer.html'
 
     def get_context_data(self, **kwargs):
-        context = super(TradeAnalyzer, self).get_context_data(**kwargs)
-        query = Q(year=2024, projection_system='steamer') | Q(year=2025, projection_system='zips') | Q(year=2026, projection_system='zips')
+        context = super().get_context_data(**kwargs)
+
+        # Fetch data for hitters and pitchers based on the query
+        query = Q(year=2025, projection_system='steamer') | Q(year=2026, projection_system='zips')
         hitters = HittingStatistics.objects.filter(query)
         pitchers = PitchingStatistics.objects.filter(query)
+        all_stats = list(chain(hitters, pitchers))
+        hitting_stats = ['fOPS', 'fAVG', 'fR', 'fRBI', 'fHR', 'fSB']
+        pitching_stats = ['fERA', 'fWHIP', 'fW', 'fSO', 'fSVH', 'fK_BB']
+        # players = {s.player for s in all_stats}
 
-        all_players = set([player_object.player for player_object in pitchers] + [player_object.player for player_object in hitters])
-        print(f'players view: {len(all_players)}')
-        context['players'] = all_players
+        player_stats = defaultdict(lambda: defaultdict(list))
+        for stat in all_stats:
+            player_stats[stat.player][stat.year].append(stat)
 
-        hitting_fScores = {}
-        for hitter in hitters:
-            player_id = hitter.player.fangraphs_id
-            if player_id not in hitting_fScores:
-                hitting_fScores[player_id] = {}
-            hitting_fScores[player_id][hitter.year] = round((hitter.fOPS + hitter.fAVG + hitter.fR + hitter.fRBI + hitter.fHR + hitter.fSB)/6)
+        player_id_map = []
+        fScores = defaultdict(dict)
+        for player, years in player_stats.items():
+            player_id_map.append({'name': player.name, 'fangraphs_id': player.fangraphs_id})
+            for year, stats in years.items():
+                hitting_total = 0
+                pitching_total = 0
+                for stat in stats:
+                    if type(stat) == HittingStatistics:
+                        hitting_total = self.calculate_fScores(stat, hitting_stats)
+                    elif type(stat) == PitchingStatistics:
+                        pitching_total = self.calculate_fScores(stat, pitching_stats)
+                fscore = hitting_total + pitching_total
+                fScores[player.fangraphs_id][year] = fscore
+        context['fScores'] = dict(fScores)
+        context['players'] = player_id_map
 
-        pitching_fScores = {}
-        for pitcher in pitchers:
-            player_id = pitcher.player.fangraphs_id
-            if player_id not in pitching_fScores:
-                pitching_fScores[player_id] = {}
-            pitching_fScores[player_id][pitcher.year] = round((pitcher.fERA + pitcher.fWHIP + pitcher.fW + pitcher.fSO + pitcher.fSVH + pitcher.fK_BB)/6)
+        # Teams for the template
+        context['teams'] = [
+            {'name': 'Team A', 'form_id': 'trade_form1'},
+            {'name': 'Team B', 'form_id': 'trade_form2'},
+        ]
 
-        context['hitting_fScores'] = hitting_fScores
-        context['pitching_fScores'] = pitching_fScores
-        # context['hitting_fScores'] = {hitter.player.fangraphs_id: round((hitter.fOPS + hitter.fAVG + hitter.fR + hitter.fRBI + hitter.fHR + hitter.fSB)/6) for hitter in HittingStatistics.objects.filter(year=2024, projection_system='steamer')}
-        # context['pitching_fScores'] = {pitcher.player.fangraphs_id: round((pitcher.fERA + pitcher.fWHIP + pitcher.fW + pitcher.fSO + pitcher.fSVH + pitcher.fK_BB)/6) for pitcher in PitchingStatistics.objects.filter(year=2024, projection_system='steamer')}
         return context
+
+    def calculate_fScores(self, stat, attributes):
+        """
+        Calculate fScores for players based on specified attributes.
+        """
+        return round(
+            sum(getattr(stat, attr, 0) for attr in attributes) / len(attributes)
+        )
+
 
