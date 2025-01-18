@@ -44,7 +44,7 @@ function initializeAutocomplete(inputId, formId, next) {
             $(`${formId} #rebuilding_score${next}`).text(rebuildingScore);
 
             // Add next field dynamically
-            addField(next + 1, formId);
+            addField(formId);
         }
     });
 }
@@ -64,7 +64,11 @@ function setAutoComplete(formId) {
 }
 
 // Add new field dynamically
-function addField(next, formId) {
+function addField(formId) {
+    console.log("addField")
+    console.log(formId)
+    const playerRows = document.querySelectorAll(`${formId} .player-row`);
+    const next = playerRows.length + 1;
     const newField = `
         <div id="player${next}" class="player-row">
             <div class="table-cell">
@@ -124,11 +128,26 @@ function generateComparisonTable(results) {
     $(".results-container").show();
 }
 
+$(".add-player-button").on("click", function () {
+    console.log("Add Player Button clicked");
+
+    // Find the parent form of the clicked button
+    const form = $(this).closest("form");
+
+    // Get the form's ID
+    const formId = `#${form.attr("id")}`;
+
+    console.log("Form ID:", formId);
+
+    // Call the addField function with the correct form ID
+    addField(formId);
+});
+
 // Submit button handler
 $("#submitButton").on("click", function () {
     const results = $(".trade-form").map(function () {
         const formId = "#" + $(this).attr("id");
-        const teamName = $(formId).find(".team-title").text();
+        const teamName = $(formId).find(".team-title").text().replace("Receives", "");
         const { winNowTotal, rebuildingTotal } = calculateTotalScores(formId);
 
         return { teamName, winNowTotal, rebuildingTotal };

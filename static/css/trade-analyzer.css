@@ -86,6 +86,10 @@
     margin-right: 35px;
 }
 
+.ui-menu-item a{
+    white-space: nowrap
+}
+
 /* Delete button outside of the table cells */
 .delete-button {
     position: absolute;
@@ -113,7 +117,8 @@
 
 /* Clear and submit button styles */
 .clear-button,
-.submit-button {
+.submit-button,
+.add-player-button {
     margin-top: 15px;
     padding: 8px 16px;
     font-size: 14px;

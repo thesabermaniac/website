@@ -11,7 +11,9 @@ media
 
 # If you are using PyCharm #
 .idea/
-*.iws /out/
+.idea/**
+*.iws
+/out
 
 # Python #
 *.py[cod]
