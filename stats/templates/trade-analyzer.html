@@ -12,7 +12,7 @@
         {% for team in teams %}
             <div class="team-container">
                 <form action="" method="post" id="{{ team.form_id }}" class="trade-form">
-                    <h4 class="team-title">{{ team.name }}</h4>
+                    <h4 class="team-title">{{ team.name }} Receives</h4>
                     {% csrf_token %}
                     <div class="table-container">
                         <!-- Table Headers -->
@@ -39,7 +39,8 @@
                         <!-- Add more rows dynamically (the template will loop for more players) -->
                     </div>
                     <div class="button-wrapper">
-                        <button type="button" id="clearButton" class="clear-button">Clear</button> <!-- New Clear Button -->
+                        <button type="button" id="addPlayerButton" class="add-player-button button">Add Player</button> <!-- New Clear Button -->
+                        <button type="button" id="clearButton" class="clear-button button">Clear</button> <!-- New Clear Button -->
                     </div>
                 </form>
             </div>
@@ -47,7 +48,7 @@
     </div>
 
     <div class="button-wrapper">
-        <button type="button" id="submitButton" class="submit-button">Submit</button>
+        <button type="button" id="submitButton" class="submit-button button">Submit</button>
     </div>
 
     <!-- Comparison Table (Hidden initially) -->
